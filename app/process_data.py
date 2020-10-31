@@ -1,19 +1,6 @@
 '''
     process_data.py - ETL processes and creating of data and labels for ML pipeline for Sales Forecasting web app.
-                    The functions can be used both for 
-                    1. training a model - by executing the file through a command line and using main() functions 
-                    OR
-                    2. predicting sales for the next month in terms of the item count and testing results on a couple of last months
-                       using already trained ML model - this is activated by a Flask web app
-
-    
     Author: Alibek Utyubayev.
-
-    Usage:
-        Need to pass following arguments as sys.argv to the program in case of training a model:
-            sales_filepath - (str) path to training sales data 
-            items_filepath - (str) path to training data on items (names, categories)
-            
 '''
 
 # import libraries
@@ -450,41 +437,3 @@ def return_processed_data(data):
 
 def create_prediction_df(X_predict, Y_predict):
     pass
-
-def main():
-    '''
-        main() - function that performs an ETL process on messages and categories data 
-                and saves data for data visuals in DB for future use by the web app
-        Input:
-            None the function, but need input as system arguments to the program
-        Output:
-            None
-    '''
-    if len(sys.argv) == 3:
-
-        sales_filepath, items_filepath = sys.argv[1:]
-        
-        print('Loading data...\n')
-        data = preprocess_data(sales_filepath, items_filepath, use_shop_ids=[38,42,35,23,32,24,4,5,12,29])
-
-        print('Cleaning and transforming data...')
-        X_train, Y_train, X_test, Y_test, X_predict = return_processed_data(data)
-        
-        # save the data
-        print('Saving data in ../data folder ...\n ')
-        save_data_csv(X_train, "../data/X_train")
-        save_data_csv(Y_train, "../data/Y_train")
-        save_data_csv(X_test, "../data/X_test")
-        save_data_csv(Y_test, "../data/Y_test")
-        save_data_csv(X_predict, "../data/X_predict")
-
-        print('Cleaned data saved to CSV files!')
-    
-    else:
-        print('Please provide the filepaths of the sales and items '\
-              'datasets as the first and second argument respectively. \n\nExample: python process_data.py '\
-              '../data/train_sales.csv ../data/items.csv ')
-
-
-if __name__ == '__main__':
-    main()
