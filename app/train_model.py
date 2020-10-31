@@ -99,7 +99,7 @@ def main():
         Output:
             None
     '''
-    if len(sys.argv) == 4
+    if len(sys.argv) == 4:
         sales_filepath, items_filepath, model_filepath = sys.argv[1:]
         print('Loading data...\n ')
         data = preprocess_data(sales_filepath, items_filepath, use_shop_ids=[38,42,7])
