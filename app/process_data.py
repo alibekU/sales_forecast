@@ -163,7 +163,7 @@ def add_empty_rows(data_monthly):
     return data_monthly_ext
 
 def add_global_features(data_monthly_ext):
-     '''
+    '''
         add_global_features() - function that adds features for training and predicting purposes.
                                 I called features global becasue they can be applied to the whole data
                                 before splitting into train and test without any data leakage in terms of forecasting
@@ -194,16 +194,16 @@ def add_global_features(data_monthly_ext):
     f_mean = lambda column: column.rolling(window=rolling_window_size, min_periods=1).mean()
     # Standard deviation
     f_std = lambda column: column.rolling(window=rolling_window_size, min_periods=1).std()
-    ​
+
     # keep functions in a list to iterate
     functions = [f_min, f_max, f_mean, f_std]
     # these are suffixes to add to column names to generate new names
     suffixes = ['min', 'max', 'mean', 'std']
-    ​
+
     # create len(functions) new features
     for i in range(len(functions)):
         data_monthly_ext['item_cnt_roll_{}'.format(suffixes[i])] = data_monthly_ext.groupby(['shop_id','item_id'])['item_cnt_month'].apply(functions[i])
-    ​
+
     # Fill the empty std features with 0
     data_monthly_ext['item_cnt_roll_std'].fillna(0, inplace=True)
 
@@ -237,7 +237,7 @@ def add_global_features(data_monthly_ext):
     return data_monthly_ext
 
 def create_labels(data_monthly_ext):
-     '''
+    '''
         create_labels() - function that creates labels = a column of values we will predict = sales next month for an item in a shop
         Input:
             data_monthly_ext - (pd.DataFrame) a Pandas dataframe with aggregated sorted sales data
@@ -248,7 +248,7 @@ def create_labels(data_monthly_ext):
     return data_monthly_ext
 
 def split_train_test_predict(data_monthly_ext):
-     '''
+    '''
         split_train_test_predict() - function that splits data into train, test and predict, where predict - is the last available month in the data,
                        and for which we will be generating prediction for the next, unknown to us month. Test will be used to see how good is the model.
                        Since we are dealing with timeseries, we cannot simply randomly split data. We also want to split exactly by month periods, so the standard 
@@ -290,7 +290,7 @@ def split_train_test_predict(data_monthly_ext):
     '''
 
 def generate_global_statistics(dataset, group_by_columns, new_column_names, agg_column='itm_cnt_nxt_mnth', agg_function_names=['mean']):
-     '''
+    '''
         add_set_features() - function for generating statistics of a dataset using grouping and aggregation
         Input:
             dataset - (pd.DataFrame) data frame to calculate statistics on
@@ -309,7 +309,7 @@ def generate_global_statistics(dataset, group_by_columns, new_column_names, agg_
 
 
 def add_set_features(train_set, test_set):
-     '''
+    '''
         add_set_features() - function for more feature engineering done on each train and test sets to avoid data leakage
         Input:
             train_set - (pd.DataFrame) training data
@@ -364,7 +364,7 @@ def add_set_features(train_set, test_set):
 
 
 def split_data_labels(train_set, test_set, predict_set):
-     '''
+    '''
         split_data_labels() - function that splits sets into data (features) and labels to predict, 
             specifically train and test into X_train, Y_train, X_test, Y_test 
             and also creates X_predict for prediction in the same format as X_train and X_test.
@@ -381,8 +381,7 @@ def split_data_labels(train_set, test_set, predict_set):
             Y_train - (pd.DataFrame) training labels
             X_test - (pd.DataFrame) testing features
             Y_test - (pd.DataFrame) testing labels
-            X_predict - (pd.DataFrame) features for predicting unknown data
-            
+            X_predict - (pd.DataFrame) features for predicting unknown data  
     '''
     # create train and test sets and labels. 
     X_train = train_set.drop(['itm_cnt_nxt_mnth', 'date_block_num'], axis=1)
@@ -414,7 +413,7 @@ def save_data_csv(df,filepath):
     return None
 
 def return_processed_data(data):
-     '''
+    '''
         return_processed_data() - function that combines all of the ETL steps for ML training and predicting.
                                   Raises exception if datafile is not in needed format or has less than 6 month of data
         Input:
@@ -473,11 +472,11 @@ def main():
         
         # save the data
         print('Saving data in ../data folder ...\n ')
-        save_data_csv(X_train, "X_train")
-        save_data_csv(Y_train, "Y_train")
-        save_data_csv(X_test, "X_test")
-        save_data_csv(Y_test, "Y_test")
-        save_data_csv(X_predict, "X_predict")
+        save_data_csv(X_train, "../data/X_train")
+        save_data_csv(Y_train, "../data/Y_train")
+        save_data_csv(X_test, "../data/X_test")
+        save_data_csv(Y_test, "../data/Y_test")
+        save_data_csv(X_predict, "../data/X_predict")
 
         print('Cleaned data saved to CSV files!')
     
