@@ -73,7 +73,7 @@ def clean_and_aggreagate(data):
     data = data.dropna()
     
     # convert date from string to datetime format
-    data['date'] = pd.to_datetime(data['date']) #format='%d.%m.%Y'
+    data['date'] = pd.to_datetime(data['date'], format='%d.%m.%Y')
 
     # Add month and year and aggregate data
     data['month'] = data['date'].dt.month
