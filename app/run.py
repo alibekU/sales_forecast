@@ -87,7 +87,7 @@ def get_results(filename):
     # save this result dataframe into an excel file for the user to download
     save_data_excel(result_df, file_location)
 
-    return render_template('results.html', filename=filename, mae = mae, mae_non_zero = mae_non_zero)
+    return render_template('results.html', filename=filename, mae = mae)
 
 @app.route('/download_template')
 def download_template():
