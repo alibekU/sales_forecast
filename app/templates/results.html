@@ -2,10 +2,16 @@
 {% block title %}Results{% endblock %}
 
 {% block results %}
-<div class="col-lg-offset-5">
-    <a href="{{ url_for('.download_file', filename = filename) }}">Please download excel with your foreacts here</a>
+<div class="jumbotron">
+    <div class="container">
+        <hr />
+        <div class="col-lg-offset-4">
+            <a href="{{ url_for('.download_file', filename = filename) }}">Please download excel with your foreacts here</a>
+        </div>
+        <div class="col-lg-offset-4">
+            <p class="text-left">Mean absolute error on test data is {{mae}} </p>
+        </div>
+    </div>
 </div>
-<p>Mean absolute error on test data is {{mae}} </p>
-<p>Mean absolute error on non-zero predictions on test data is {{mae_non_zero}} </p>
 {% endblock %}
 
