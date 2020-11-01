@@ -27,14 +27,14 @@ A good forecasting tool would automize the tedious process of planning for the n
 3. Then, use pip to install all the needed packages: `pip install -r requirements.txt`
 
 # Usage
-**To deploy the web app locally:**
-After downloading, go to the the 'sales_forecast/app' folder and:
-1. **From the app/ directory** run the following command to launch your web app.
+**To deploy the web app locally:**<br/>
+After downloading, go to the the 'sales_forecast/app' folder and: <br/>
+1. **From the app/ directory** run the following command to launch your web app <br/>
     `python run.py`
 
 2. Go to http://0.0.0.0:3001/
 
-**To re-train the model:**
+**To re-train the model:**<br/>
 Currently the web app uses app/models/forecast_v1.pkl model that was pre-trained on 40 shops.<br/>
 However, if you want to create a new model and re-train it run the following commands in the 'sales_forecast/app' directory. <br/>
 Note that by default the model will be trained on 3 shops to save time.<br/>
@@ -55,26 +55,26 @@ Instructions:
 5. A link that allows to download results will apper after predicting is complete 
 
 # Project structure 
-data\
--sales_train.csv - data with sales transactions for 60 shops in 3 years from https://www.kaggle.com/c/competitive-data-science-predict-future-sales/data
--items.csv - data with item categories for 60 shops in 3 years from https://www.kaggle.com/c/competitive-data-science-predict-future-sales/data
-models\
--forecast_v1.pkl - a Pickle file, saved regression model trained on 40 shops data
--forecast.pkl - a Pickle file, saved regression model trained on 3 shops data
-app\
--run.py - the main script of Flask web app
--process_data.py - functions to clean, generate features and split data for predicting
--train_model.py - functions to train and evaluate a model. Run this file in command line to re-build a model
--templates\
- --master.html - main html page template
- --resulst.html - a template for displaying results
- -uploads\ - folder with data uploaded by the users
- -downloads\ - folder with data for users to download
-images\ - pictures for the README file
-requirements.txt - a list of required PIP packages, result of `pip freeeze` command
-Procfile - code for Flask app launch at Heroku
-data_exloration_v1.ipynb - a Jupyter notebook with ML pipeline exploration
-README.md - readme file
+data\ <br/>
+-sales_train.csv - data with sales transactions for 60 shops in 3 years from https://www.kaggle.com/c/competitive-data-science-predict-future-sales/data<br/>
+-items.csv - data with item categories for 60 shops in 3 years from https://www.kaggle.com/c/competitive-data-science-predict-future-sales/data<br/>
+models\<br/>
+-forecast_v1.pkl - a Pickle file, saved regression model trained on 40 shops data<br/>
+-forecast.pkl - a Pickle file, saved regression model trained on 3 shops data<br/>
+app\<br/>
+-run.py - the main script of Flask web app<br/>
+-process_data.py - functions to clean, generate features and split data for predicting<br/>
+-train_model.py - functions to train and evaluate a model. Run this file in command line to re-build a model<br/>
+-templates\<br/>
+ --master.html - main html page template<br/>
+ --resulst.html - a template for displaying results<br/>
+ -uploads\ - folder with data uploaded by the users<br/>
+ -downloads\ - folder with data for users to download<br/>
+images\ - pictures for the README file<br/>
+requirements.txt - a list of required PIP packages, result of `pip freeeze` command<br/>
+Procfile - code for Flask app launch at Heroku<br/>
+data_exloration_v1.ipynb - a Jupyter notebook with ML pipeline exploration<br/>
+README.md - readme file<br/>
 
 # Data
 The training data comes from Kaggle's Predict Future Sales competition https://www.kaggle.com/c/competitive-data-science-predict-future-sales/data <br/>
@@ -84,6 +84,8 @@ Number of shops is 40 <br/>
 Number of categories is 74 <br/>
 Number of unique items is 19111 <br/>
 
+![plot6](images/screenshot6.png)
+We can see from the summary that the number of items sold per month on average is less than 3. This could be challeinging if we would later try to predict on shops with high amount of sales. We might want to multiply some of the shops sales by some factor to generate data that will be useful in such cases.
 ![plot2](images/screenshot2.png)
 ![plot3](images/screenshot3.png)
 ![plot4](images/screenshot4.png)
@@ -108,12 +110,12 @@ Web app: <br/>
 4. Possibly send result forecast files through email for privacy
 5. Support multiple users work
 <br/>
-Model:<br/>
+Model: <br/>
 1. CV with time based split of train and test
 2. Train on more shops
 
 # Author 
-- Alibek Utyubayev. 
+Alibek Utyubayev. 
 <br/>
 Linkedin: https://www.linkedin.com/in/alibek-utyubayev-74402721/
 
