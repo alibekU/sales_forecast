@@ -73,6 +73,9 @@ def get_results(filename):
     # get the evaluation of prediction accuracy on test data from seen months
     mae, mae_non_zero = evaluate_model(model, X_test, Y_test)
 
+    mae = round(mae,2)
+    mae_non_zero = round(mae_non_zero,2)
+
     # predict the data for the next unseen month
     y_predict = model.predict(X_predict)
     # convert to int for meaningful forecast
