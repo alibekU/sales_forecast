@@ -402,6 +402,20 @@ def save_data_csv(df,filepath):
 
     return None
 
+def save_data_excel(df,filepath):
+    '''
+        save_data() - a function that saves a Pandas dataframe into an excel file.
+        Input:
+            df -  a Pandas dataframe with data to save
+            filepath - a path to an excel file where to save the data
+        Output:
+            None
+    '''
+    df.to_excel(filepath, index=False)
+
+    return None
+    
+
 def return_processed_data(data):
     '''
         return_processed_data() - function that combines all of the ETL steps for ML training and predicting.
@@ -414,7 +428,8 @@ def return_processed_data(data):
             Y_train - (pd.DataFrame) training labels
             X_test - (pd.DataFrame) testing features
             Y_test - (pd.DataFrame) testing labels
-            X_predict - (pd.DataFrame) features for predicting unknown data
+            X_predict - (pd.DataFrame) data set (features) for predicting unknown data
+            extended_predict_set - (pd.DataFrame) data set for predicting data, like X_predict, but with all the original columns (like item_id and etc.) to return to a user later
     '''
     data = check_data_correctnes(data)
     data_monthly = clean_and_aggreagate(data)
@@ -424,6 +439,9 @@ def return_processed_data(data):
     train_set, test_set, predict_set = split_train_test_predict(data_monthly_ext)
     train_set, test_set = add_set_features(train_set, test_set)
     X_train, Y_train, X_test, Y_test, X_predict = split_data_labels(train_set, test_set, predict_set)
+
+    # save the data we will be predicting before we will select features for modelling from it. This will allow us to reurn meaningfull prediction to the user
+    extended_predict_set = X_predict
 
     # select features that will be used for training, testing and predicting
     features = ['month_mean_future', 'year_mean_future', 'item_mean_future', 'shop_mean_future', 'shop_item_mean_future', 'category_mean_future',
@@ -436,7 +454,20 @@ def return_processed_data(data):
     X_test = X_test[features]
     X_predict = X_predict[features]
 
-    return X_train, Y_train, X_test, Y_test, X_predict
+    return X_train, Y_train, X_test, Y_test, X_predict, extended_predict_set
 
-def create_prediction_df(X_predict, Y_predict):
-    pass
+def create_prediction_df(extended_predict_set, Y_predict, columns = ['year', 'month', 'shop_id', 'item_id', 'item_category_id', 'item_price_avg']):
+    '''
+        create_prediction_df() - a function that combines predicted target data (sales amount) with the data itself (shops, items, categories) into one Pandas dataframe
+        Input:
+            extended_predict_set - (pd.dataframe) dataframe with data (year, month, shops, items, categories, etc.)
+            Y_predict - (list or numpy array) dataframe with predicted sales count for the next month
+            columns = columns of extended_predict_set to keep
+        Output:
+            result_df - resulting df with combined data
+    '''
+    result_df= extended_predict_set[columns]
+    # add predicted sales
+    result_df['predicted_monthly_sales_count'] =  Y_predict
+
+    return result_df

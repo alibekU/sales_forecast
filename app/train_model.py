@@ -71,9 +71,14 @@ def evaluate_model(model, X_test, y_test):
     '''
     # get the model prediction
     y_pred = model.predict(X_test)
+    # make integers for meaningfull predictions
     y_pred = y_pred.astype(int)
     MAE = mean_absolute_error(y_test, y_pred)
-    return MAE
+
+    validate_act_vs_pred = pd.DataFrame(zip(y_test, y_pred), columns=['actual', 'prediction'])
+    validate_non_zero = validate_act_vs_pred[(validate_act_vs_pred['actual'] != 0) | (validate_act_vs_pred['prediction'] != 0)]
+    MAE_non_zero = mean_absolute_error(validate_non_zero['actual'], validate_non_zero['prediction'])
+    return MAE, MAE_non_zero
 
 
 def save_model(model, model_filepath):
@@ -105,7 +110,7 @@ def main():
         data = preprocess_data(sales_filepath, items_filepath, use_shop_ids=[38,42,7])
 
         print('Cleaning and transforming data...')
-        X_train, Y_train, X_test, Y_test, X_predict = return_processed_data(data)
+        X_train, Y_train, X_test, Y_test, X_predict, extended_predict_set = return_processed_data(data)
         
         print('Building model...')
         model = build_model()
