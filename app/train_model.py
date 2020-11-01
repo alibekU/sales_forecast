@@ -55,7 +55,7 @@ def build_model():
     # using GridSearch for optimization is not a good idea for time series since we can only test on future data
     #cv_xgb = GridSearchCV(XGBRegressor(), param_grid = parameters, n_jobs=-1, cv=3)
     #model = cv_xgb
-    model = XGBRegressor()
+    model = XGBRegressor(min_child_weight=10)
     return model
 
 
