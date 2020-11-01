@@ -1,3 +1,5 @@
+*.code-workspace
+sales_forecast_env/
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -127,3 +129,14 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+.vscode/settings.json
+app/.DS_Store
+data_exploration-Copy1.ipynb
+data_exploration.ipynb
+data_exploration.ipynb
+save_excel_template.ipynb
+data_exploration.ipynb
+data/.DS_Store
+data_exploration.ipynb
+app/uploads/excel_template-5.xls
+app/uploads/excel_template.xls
