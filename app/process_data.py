@@ -484,6 +484,6 @@ def create_prediction_df(extended_predict_set, Y_predict, columns = ['year', 'mo
     result_df.loc[:,'month'] = cur_month
 
     # add predicted sales
-    result_df['predicted_number_items_sold'] =  Y_predict
+    result_df.loc[:,'predicted_number_items_sold'] =  Y_predict
 
     return result_df
