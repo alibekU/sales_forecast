@@ -141,3 +141,5 @@ data_exploration.ipynb
 app/uploads/excel_template-5.xls
 app/uploads/excel_template.xls
 data_exploration.ipynb
+.DS_Store
+data_exploration.ipynb

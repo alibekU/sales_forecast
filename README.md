@@ -58,23 +58,23 @@ Instructions:
 data\ <br/>
 -sales_train.csv - data with sales transactions for 60 shops in 3 years from https://www.kaggle.com/c/competitive-data-science-predict-future-sales/data<br/>
 -items.csv - data with item categories for 60 shops in 3 years from https://www.kaggle.com/c/competitive-data-science-predict-future-sales/data<br/>
-models\<br/>
+models\ <br/>
 -forecast_v1.pkl - a Pickle file, saved regression model trained on 40 shops data<br/>
 -forecast.pkl - a Pickle file, saved regression model trained on 3 shops data<br/>
-app\<br/>
--run.py - the main script of Flask web app<br/>
+app\ <br/>
+-run.py - the main script of Flask web app <br/>
 -process_data.py - functions to clean, generate features and split data for predicting<br/>
 -train_model.py - functions to train and evaluate a model. Run this file in command line to re-build a model<br/>
--templates\<br/>
- --master.html - main html page template<br/>
- --resulst.html - a template for displaying results<br/>
- -uploads\ - folder with data uploaded by the users<br/>
- -downloads\ - folder with data for users to download<br/>
-images\ - pictures for the README file<br/>
-requirements.txt - a list of required PIP packages, result of `pip freeeze` command<br/>
-Procfile - code for Flask app launch at Heroku<br/>
-data_exloration_v1.ipynb - a Jupyter notebook with ML pipeline exploration<br/>
-README.md - readme file<br/>
+-templates\ <br/>
+ --master.html - main html page template <br/>
+ --resulst.html - a template for displaying results <br/>
+ -uploads\ - folder with data uploaded by the users <br/>
+ -downloads\ - folder with data for users to download <br/>
+images\ - pictures for the README file <br/>
+requirements.txt - a list of required PIP packages, result of `pip freeeze` command <br/>
+Procfile - code for Flask app launch at Heroku <br/>
+data_exloration_v1.ipynb - a Jupyter notebook with ML pipeline exploration <br/>
+README.md - readme file <br/>
 
 # Data
 The training data comes from Kaggle's Predict Future Sales competition https://www.kaggle.com/c/competitive-data-science-predict-future-sales/data <br/>
@@ -85,7 +85,8 @@ Number of categories is 74 <br/>
 Number of unique items is 19111 <br/>
 
 ![plot6](images/screenshot6.png)
-We can see from the summary that the number of items sold per month on average is less than 3. This could be challeinging if we would later try to predict on shops with high amount of sales. We might want to multiply some of the shops sales by some factor to generate data that will be useful in such cases.
+<br/>
+We can see from the summary that the number of items sold per month on average (item_cnt_month) is less than 3. This could be challeinging if we would later try to predict on shops with high amount of sales. We might want to multiply some of the shops sales by some factor to generate data that will be useful in such cases.
 ![plot2](images/screenshot2.png)
 ![plot3](images/screenshot3.png)
 ![plot4](images/screenshot4.png)
