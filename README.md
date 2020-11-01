@@ -120,6 +120,7 @@ Web app: <br/>
 3. Security for the uploaded data
 4. Possibly sending forecast files through email for privacy
 5. Support of multiple users work
+6. Output data from the last month next to prediction for comfort
 <br/>
 Model: <br/>
 1. Hyperparameter optimization with less data to speed up training initially <br/>
