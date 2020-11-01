@@ -118,8 +118,9 @@ def main():
         print('Training model...')
         model.fit(X_train, Y_train)
         
+        mae, mae_non_zero = evaluate_model(model, X_test, Y_test)
         print('Evaluating model...')
-        print('MAE on test data is {}'.format(evaluate_model(model, X_test, Y_test)))
+        print('MAE on test data is {}, mae non-zero on test data is {}'.format(mae, mae_non_zero))
         print('XGBRegressor with this parameters turned out to be the best:', model.best_estimator_.get_params())
 
         print(model.best_params_)
