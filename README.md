@@ -94,7 +94,7 @@ In the code I currently use I've not performed grid search parameter optimizatio
 In the modelling process I predict sales for the next month as the target variable. <br/>
 I've added various feature that show how each shop, item and category have historically performed.
 The most important features turned out to be category-grouped mean number of items sold next month, month-grouped mean number of items sold next month and shop-grouped mean number of items sold next month.
-![plot5](images/screenshot4.png)
+![plot5](images/screenshot5.png)
 
 # Discussion of the results
 Currently the mean absolute error (MAE) on number of items sold in a month is around 0.05 on test data that was derived from the shops in the train data. <br/>
