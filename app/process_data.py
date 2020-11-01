@@ -297,7 +297,10 @@ def generate_global_statistics(dataset, group_by_columns, new_column_names, agg_
 
 def add_set_features(train_set, test_set):
     '''
-        add_set_features() - function for more feature engineering done on each train and test sets to avoid data leakage
+        add_set_features() - function for more feature engineering done on each train and test sets to avoid data leakage.
+                            We will be calculating statistics based on the sales in the next month, so cannot use it on predict set as
+                            it does not have information on the future sales. On test set we are setting values calculated based on train data
+                            because we want to avoid data leakage and test data "knowing" about sales we want to predict.
         Input:
             train_set - (pd.DataFrame) training data
             test_set - (pd.DataFrame) testing data to see how we performed
