@@ -44,7 +44,7 @@ To run pipeline that cleans data and trains the model run this command from app/
 
 
 # Web Application
-The app can be hosted locally only now.
+The app can be found at https://sales-volumes-forecast.herokuapp.com or hosted locally using above instructions.
 ![Web Application Interface](images/screenshot1.png)
 <br/>
 Instructions:
@@ -93,7 +93,7 @@ We can see from the summary that the number of items sold per month on average (
 
 # Modelling
 The model that was used for forecasting is XGBoost regressor as it showed the best results in terms of mean absolute error (MAE) of 0.8 (items/month) compared to Linear Regression (MAE of 1.8 on test data) and Random Forest (MAE of 1.2 on test data). <br/>
-In the code I currently use I am not performing grid search parameter optimization as it takes several our to train the model without it, but in the future I plan to use less data and try to optimize the model.<br/>
+In the code I currently use I am not performing grid search parameter optimization as it takes several hours to train the model without it, but in the future I plan to use less data and try to optimize the model.<br/>
 On the models that used less data (3 shops) I ran grid search parameter optimization with the following parameters: <br/>
 `parameters = { <br/>
                 "max_depth"        : [ 1, 3], <br/>
@@ -126,7 +126,8 @@ Model: <br/>
 1. Hyperparameter optimization with less data to speed up training initially <br/>
 2. Hyperparameter optimization with CV split based on date instead of random as we are dealing with time series <br/>
 3. Training on more diverse data that will have more items sold or generating such data from this data <br/>
-4. Adding external data to make better predictions: weather and holidays
+4. Adding external data to make better predictions: weather and holidays <br/>
+5. Using ensemble methods to combine several models and take output of one model as input of another 
 
 # Author 
 Alibek Utyubayev. 
