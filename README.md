@@ -95,12 +95,12 @@ We can see from the summary that the number of items sold per month on average (
 The model that was used for forecasting is XGBoost regressor as it showed the best results in terms of mean absolute error (MAE) of 0.8 (items/month) compared to Linear Regression (MAE of 1.8 on test data) and Random Forest (MAE of 1.2 on test data). <br/>
 In the code I currently use I am not performing grid search parameter optimization as it takes several hours to train the model without it, but in the future I plan to use less data and try to optimize the model.<br/>
 On the models that used less data (3 shops) I ran grid search parameter optimization with the following parameters: <br/>
-`parameters = { <br/>
-                "max_depth"        : [ 1, 3], <br/>
-                "min_child_weight" : [ 7, 10], <br/>
-                "gamma" : [0, 1, 3], <br/>
-                "learning_rate" : [0, 0.3, 0.7] <br/>
-    }` <br/>
+`parameters = { 
+                "max_depth"        : [ 1, 3], 
+                "min_child_weight" : [ 7, 10], 
+                "gamma" : [0, 1, 3], 
+                "learning_rate" : [0, 0.3, 0.7] 
+    }` 
 of which only min_child_weight turned out to be different from the default parameters and became 10. <br/>
 In the modelling process I predict sales for the next month as the target variable. <br/>
 I've added various feature that show how each shop, item and category have historically performed. <br/>
