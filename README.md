@@ -16,10 +16,10 @@ A web app for forecasting sales given historical data
 
 
 # Purpose
-A web application that predicts sales volumes (number of items sold) next month based on historical data.
-This potentaially could be interesting to small/medium business owners in retailing to help them plan their supply better.
-Machine Learning has technologies for such task for a long time, but in many cases using them requires buying expensive software solustions or hiring a team of analytics.
-A good forecasting tool would automize the tedious process of planning for the next month and also improve expert-based forecasts using data science.
+A web application that predicts sales volumes (number of items sold) next month based on historical data. <br/>
+This potentaially could be interesting to small/medium business owners in retailing to help them plan their supply better.<br/>
+Machine Learning has technologies for such task for a long time, but in many cases using them requires buying expensive software solustions or hiring a team of analytics.<br/>
+A good forecasting tool would automize the tedious process of planning for the next month and also improve expert-based forecasts using data science.<br/>
 
 # Installation
 1. In order to install the code and deploy the app locally please download from Github: `git clone https://github.com/alibekU/pipsales_forecast`.
@@ -35,11 +35,11 @@ After downloading, go to the the 'sales_forecast/app' folder and:
 2. Go to http://0.0.0.0:3001/
 
 **To re-train the model:**
-Currently the web app uses app/models/forecast_v1.pkl model that was pre-trained on 40 shops.
+Currently the web app uses app/models/forecast_v1.pkl model that was pre-trained on 40 shops.<br/>
 However, if you want to create a new model and re-train it run the following commands in the 'sales_forecast/app' directory. <br/>
-Note that by default the model will be trained on 3 shops to save time.
-Please note it will take 5-6 hours to train on 40 shops.
-To run pipeline that cleans data and trains the model run this command from app/ directory
+Note that by default the model will be trained on 3 shops to save time.<br/>
+Please note it will take 5-6 hours to train on 40 shops.<br/>
+To run pipeline that cleans data and trains the model run this command from app/ directory<br/>
         `python train_model.py ../data/sales_train.csv ../data/items.csv ../models/forecast.pkl`
 
 
