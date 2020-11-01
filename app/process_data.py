@@ -465,9 +465,25 @@ def create_prediction_df(extended_predict_set, Y_predict, columns = ['year', 'mo
             columns = columns of extended_predict_set to keep
         Output:
             result_df - resulting df with combined data
-    '''
-    result_df= extended_predict_set[columns]
+    '''    
+    result_df = extended_predict_set[columns]
+
+    # get current month and year
+    cur_month = extended_predict_set['month'].iloc[0]
+    cur_year = extended_predict_set['year'].iloc[0]
+
+    # increase current month by 1 to output prediction
+    cur_month += 1
+    # check that we are less than 12, set to 1 if 13. '%' alone won't work as there is case of 12 that gives 0
+    if cur_month == 13:
+        cur_month = 1
+        # increae a year by one
+        cur_year += 1
+
+    result_df['year'] = cur_year
+    result_df['month'] = cur_month
+
     # add predicted sales
-    result_df['next_month_predict_count'] =  Y_predict
+    result_df['predicted_number_items_sold'] =  Y_predict
 
     return result_df
