@@ -468,6 +468,6 @@ def create_prediction_df(extended_predict_set, Y_predict, columns = ['year', 'mo
     '''
     result_df= extended_predict_set[columns]
     # add predicted sales
-    result_df['predicted_monthly_sales_count'] =  Y_predict
+    result_df['next_month_predict_count'] =  Y_predict
 
     return result_df
