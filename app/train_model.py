@@ -1,5 +1,5 @@
 '''
-    train_classifier.py - ML pipeline of the Sales Forecast web app.
+    train_model.py - ML pipeline of the Sales Forecast web app.
                           Functions are used to: 
                           1. train the model on data once initially using command line execution 
                           2. use created model in the web app. Only evaluate_model() function is called from the web app
@@ -46,16 +46,15 @@ def build_model():
             model - a sklearn GridSearchCV object, model to be trained on existing data and predict categories for the new data
     '''
 
-    '''
+    
     parameters = {
-                "max_depth"        : [ 1, 3],
-                "min_child_weight" : [ 7, 10]
-    }
-    '''        
+                "max_depth"        : [ 1, 2, 6],
+                "min_child_weight" : [1, 5, 7]
+    }        
     # using GridSearch for optimization is not a good idea for time series since we can only test on future data
-    #cv_xgb = GridSearchCV(XGBRegressor(), param_grid = parameters, n_jobs=-1, cv=3)
-    #model = cv_xgb
-    model = XGBRegressor(min_child_weight=10)
+    cv_xgb = GridSearchCV(XGBRegressor(), param_grid = parameters, n_jobs=-1, cv=3)
+    model = cv_xgb
+    #model = XGBRegressor(min_child_weight=10)
     return model
 
 
@@ -107,7 +106,7 @@ def main():
     if len(sys.argv) == 4:
         sales_filepath, items_filepath, model_filepath = sys.argv[1:]
         print('Loading data...\n ')
-        data = preprocess_data(sales_filepath, items_filepath, use_shop_ids=[38,42,7])
+        data = preprocess_data(sales_filepath, items_filepath, use_shop_ids=range(46))
 
         print('Cleaning and transforming data...')
         X_train, Y_train, X_test, Y_test, X_predict, extended_predict_set = return_processed_data(data)
@@ -135,8 +134,8 @@ def main():
                 '1. filepath of the sales dataset items '\
                 '2. filepath of the items dataset items'\
                 '3. filepath of the pickle file to '\
-              'save the model to as an argument to program. \n\nExample: python '\
-              'train_classifier.py ../data/train_sales.csv ../data/items.csv  ../model/forecast.pkl')
+              'save the model to as an argument to program. \n\nExample:'\
+              'python train_model.py ../data/sales_train.csv ../data/items.csv  ../model/forecast.pkl')
 
 
 if __name__ == '__main__':
