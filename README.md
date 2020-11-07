@@ -86,9 +86,6 @@ Number of unique items is 19111 <br/>
 ![plot6](images/screenshot6.png)
 <br/>
 We can see from the summary that the number of items sold per month on average (item_cnt_month) is less than 3. This could be challeinging if we would later try to predict on shops with high amount of sales. We might want to multiply some of the shops sales by some factor to generate data that will be useful in such cases.
-![plot2](images/screenshot2.png)
-![plot3](images/screenshot3.png)
-![plot4](images/screenshot4.png)
 
 # Analysis
 The model that was used for forecasting is XGBoost regressor as it showed the best results in terms of mean absolute error (MAE) of 0.8 (items/month) compared to Linear Regression (MAE of 1.8 on test data) and Random Forest (MAE of 1.2 on test data). <br/>
