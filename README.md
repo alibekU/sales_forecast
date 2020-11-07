@@ -2,20 +2,20 @@
 A web app for forecasting sales given historical data
 
 # Table of contents
-- [Purpose](#purpose)
+- [Project Definition](#project-definition)
 - [Installation](#installation)
 - [Usage](#usage)
 - [Web Application](#web-application)
 - [Project structure](#project-structure)
 - [Data](#data)
-- [Modelling](#modelling) 
-- [Discussion of the results](#discussion-of-the-results)
+- [Analysis](#analysis) 
+- [Conclusion](#conclusion)
 - [Author](#author)
 - [Credits](#credits)
 - [Requirements](#requirements)
 
 
-# Purpose
+# Project Definition
 A web application that predicts sales volumes (number of items sold) next month based on historical data. <br/>
 This potentaially could be interesting to small/medium business owners in retailing to help them plan their supply better.<br/>
 Machine Learning has technologies for such task for a long time, but in many cases using them requires buying expensive software solustions or hiring a team of analytics.<br/>
@@ -90,7 +90,7 @@ We can see from the summary that the number of items sold per month on average (
 ![plot3](images/screenshot3.png)
 ![plot4](images/screenshot4.png)
 
-# Modelling
+# Analysis
 The model that was used for forecasting is XGBoost regressor as it showed the best results in terms of mean absolute error (MAE) of 0.8 (items/month) compared to Linear Regression (MAE of 1.8 on test data) and Random Forest (MAE of 1.2 on test data). <br/>
 In the code I currently use I am not performing grid search parameter optimization as it takes several hours to train the model without it, but in the future I plan to use less data and try to optimize the model.<br/>
 On the models that used less data (3 shops) I ran grid search parameter optimization with the following parameters: <br/>
@@ -107,7 +107,7 @@ Since we are dealing with a timeseries, the features that can calculated across 
 The most important features turned out to be category-grouped mean number of items sold next month, month-grouped mean number of items sold next month and shop-grouped mean number of items sold next month.
 ![plot5](images/screenshot5.png)
 
-# Discussion of the results
+# Conclusion
 Currently the mean absolute error (MAE) on number of items sold in a month is around 0.8 on test data that was derived from the 40 shops in the train data. <br/>
 When testing on 10 shops that were not used in training, MAE is 1.2. While testing on one unseen shop with only 6 month of data the MAE is 1.96. Given that the average of items sold per month is 2, this is not a small number. This demonstrates that for better predictions we need more data in terms of the shops and time period. This suggests that trying to predict sales with this app for a single shop that has only a couple month of data will not be a good idea<br/>
 Another thing is that to really see the accuracy of the prediction it would be better to have more broad data sets with sales of large amount of items. Currently this results imply that we should use the model on data with large amounts of sales (groceries, for example) with cautious as the error can be much bigger in terms of the number of items.

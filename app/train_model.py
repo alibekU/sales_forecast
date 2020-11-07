@@ -48,8 +48,8 @@ def build_model():
 
     
     parameters = {
-                "max_depth"        : [ 1, 2, 6],
-                "min_child_weight" : [1, 5, 7]
+                #"max_depth"        : [ 1, 2, 6],
+                "min_child_weight" : [3, 5]
     }        
     # using GridSearch for optimization is not a good idea for time series since we can only test on future data
     cv_xgb = GridSearchCV(XGBRegressor(), param_grid = parameters, n_jobs=-1, cv=3)
@@ -116,9 +116,10 @@ def main():
         
         print('Training model...')
         model.fit(X_train, Y_train)
-        
+
+        print('Evaluating model...')        
         mae, mae_non_zero = evaluate_model(model, X_test, Y_test)
-        print('Evaluating model...')
+
         print('MAE on test data is {}, mae non-zero on test data is {}'.format(mae, mae_non_zero))
         print('XGBRegressor with this parameters turned out to be the best:', model.best_estimator_.get_params())
 
@@ -135,7 +136,7 @@ def main():
                 '2. filepath of the items dataset items'\
                 '3. filepath of the pickle file to '\
               'save the model to as an argument to program. \n\nExample:'\
-              'python train_model.py ../data/sales_train.csv ../data/items.csv  ../model/forecast.pkl')
+              'python train_model.py ../data/sales_train.csv ../data/items.csv ../models/forecast.pkl')
 
 
 if __name__ == '__main__':
