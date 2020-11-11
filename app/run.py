@@ -8,7 +8,7 @@ import plotly.graph_objs as Go
 import numpy as np
 import joblib
 from process_data import load_data_excel, return_processed_data, create_prediction_df, save_data_excel
-from train_model import evaluate_model
+from train_model import evaluate_model, base_estimator
 from werkzeug.utils import secure_filename
 from xgboost import XGBRegressor
 import os
@@ -66,15 +66,37 @@ def get_results(filename):
     # get the data into pandas dataframe
     data = load_data_excel(file_location)
     # process data
-    X_train, Y_train, X_test, Y_test, X_predict, extended_predict_set = return_processed_data(data)
+    X_train, Y_train, X_test, Y_test, X_predict, extended_test_set, extended_predict_set = return_processed_data(data)
     # load model
-    model = joblib.load("../models/forecast_v1.pkl")
- 
-    # get the evaluation of prediction accuracy on test data from seen months
-    mae, mae_non_zero = evaluate_model(model, X_test, Y_test)
+    model = joblib.load("../models/forecast_best_linear.pkl")
 
-    mae = round(mae,2)
-    mae_non_zero = round(mae_non_zero,2)
+    # Compare with base estimator that returns last 3-month average of items sold
+    estimator_last_3_months = base_estimator('last_three_months')
+
+    # get the evaluation of prediction accuracy on test data from seen months
+    mae, mae_base, error_better, cash_better, total_sales = evaluate_model(model, estimator_last_3_months, X_test, Y_test, extended_test_set)       
+
+    min_month = extended_test_set['month'].iloc[0]
+    min_year = extended_test_set['year'].iloc[0]
+    max_month = extended_test_set['month'].iloc[-1]
+    max_year = extended_test_set['year'].iloc[-1]
+
+    date_min = '{}/{}'.format(min_month, min_year)
+    date_max = '{}/{}'.format(max_month, max_year)
+        
+    if error_better >= 0:
+        result_word1 = 'YES'
+    else:
+        result_word1 = 'NO'
+    
+    if error_better > 0:
+        result_word2 = 'better'
+    elif error_better == 0:
+        result_word2 = ' different - meaning produced the same error'
+    else:
+        result_word2 = 'worse'
+
+    saving = int(total_sales*cash_better)
 
     # predict the data for the next unseen month
     y_predict = model.predict(X_predict)
@@ -87,7 +109,18 @@ def get_results(filename):
     # save this result dataframe into an excel file for the user to download
     save_data_excel(result_df, file_location)
 
-    return render_template('results.html', filename=filename, mae = mae)
+    return render_template('results.html', 
+                            filename=filename, 
+                            mae=mae,
+                            mae_base=mae_base, 
+                            error_better=int(100*error_better),
+                            cash_better=int(100*cash_better),
+                            total_sales=total_sales,
+                            date_min=date_min,
+                            date_max=date_max,
+                            result_word1=result_word1,
+                            result_word2=result_word2,
+                            saving=saving)
 
 @app.route('/download_template')
 def download_template():

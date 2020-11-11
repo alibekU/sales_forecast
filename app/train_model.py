@@ -23,6 +23,9 @@ from sklearn.model_selection import GridSearchCV
 from xgboost import XGBRegressor
 from xgboost import plot_importance
 from process_data import preprocess_data, return_processed_data
+from sklearn.preprocessing import StandardScaler
+from sklearn.linear_model import HuberRegressor
+from sklearn.model_selection import TimeSeriesSplit
 
 
 def load_data_csv(filepath):
@@ -47,37 +50,83 @@ def build_model():
     '''
 
     
+    linear_pipeline = Pipeline(steps=[
+                    ('Scaler', StandardScaler()),
+                    ('Regressor', HuberRegressor(max_iter=300, epsilon=1.3))
+                  ])
+
+    # To save time the gridsearch cv is commented out as I've already ran it before and inputted parameters above
+    '''
     parameters = {
-                #"max_depth"        : [ 1, 2, 6],
-                "min_child_weight" : [3, 5]
-    }        
-    # using GridSearch for optimization is not a good idea for time series since we can only test on future data
-    cv_xgb = GridSearchCV(XGBRegressor(), param_grid = parameters, n_jobs=-1, cv=3)
-    model = cv_xgb
-    #model = XGBRegressor(min_child_weight=10)
+                    'Regressor__tol': [0.0001, 0.0005]
+                    'Regressor__max_iter': [300, 400]
+                    'Regressor__epsilon': [1.3, 1.35]
+                 }
+
+    cv_linear = GridSearchCV(
+                    linear_pipeline, 
+                    param_grid = parameters, 
+                    n_jobs=-1, 
+                    cv=TimeSeriesSplit(n_splits=3), 
+                    scoring='neg_mean_absolute_error')
+    model = cv_linear
+    '''
+    model = linear_pipeline
     return model
 
 
-def evaluate_model(model, X_test, y_test):
+def evaluate_model(model, base_estimator, X_test, y_test, extended_test_set):
     '''
         evaluate_model() - function that evaluates an sklearn model
         Input:
             model - a trained sklearn model capable of  'predict' methods
-            X_test - data for testing, features
-            y_test - labels for testing, targets
+            X_test - (pd.DataFrame) data for testing, features
+            y_test - (np.array) array with labels for testing, targets
         Output:
             MAE - (float) - mean absolute error across all shops and items montly data for period of time defined in X_test dataset
     '''
+    
+    y_test = np.array(y_test)
     # get the model prediction
     y_pred = model.predict(X_test)
     # make integers for meaningfull predictions
     y_pred = y_pred.astype(int)
     MAE = mean_absolute_error(y_test, y_pred)
-
-    validate_act_vs_pred = pd.DataFrame(zip(y_test, y_pred), columns=['actual', 'prediction'])
-    validate_non_zero = validate_act_vs_pred[(validate_act_vs_pred['actual'] != 0) | (validate_act_vs_pred['prediction'] != 0)]
-    MAE_non_zero = mean_absolute_error(validate_non_zero['actual'], validate_non_zero['prediction'])
-    return MAE, MAE_non_zero
+    
+    # get the base estimator prediction
+    y_pred_base = base_estimator.predict(X_test)
+    # make integers for meaningfull predictions
+    y_pred_base = y_pred_base.astype(int)
+    MAE_base = mean_absolute_error(y_test, y_pred_base)
+    
+    error_diff = (MAE_base - MAE)
+    
+    if MAE_base != 0:
+        error_better = error_diff/MAE_base
+    elif error_diff == 0:
+        error_better = 0
+    else:
+        error_better =  None    
+    
+    prices = np.array(extended_test_set['item_price_avg'])
+    total_sales = np.sum(prices*y_test)
+            
+    diff_from_fact = np.abs(y_pred - y_test)
+    diff_from_fact_base = np.abs(y_pred_base - y_test)
+    
+    cash_error_model = np.sum(diff_from_fact*prices)
+    cash_error_base = np.sum(diff_from_fact_base*prices)
+    
+    cash_diff = (cash_error_base - cash_error_model)
+    
+    if total_sales != 0:
+        cash_better = cash_diff/total_sales
+    elif cash_diff == 0:
+        cash_better = 0
+    else:
+        cash_better = None
+        
+    return round(MAE,2), round(MAE_base,2) , round(error_better,2), round(cash_better,2), int(total_sales)
 
 
 def save_model(model, model_filepath):
@@ -94,6 +143,32 @@ def save_model(model, model_filepath):
     file_pkl.close()
     return None
 
+class base_estimator:
+    '''
+        base_estimator - class for returning basic prediction for items sold next month 
+                        to compare with ML estimators
+        Parameters:
+            type_ - (str) type of base estimator, either 'last_month' (by default) which returns number of items sold this month,
+                    or 'last_three_months' which returns average of number of items sold last 3 months 
+                    as the prediction of items sold next month
+    '''
+    def __init__(self, type_='last_month'):
+        self.type_ = type_
+    
+    def predict(self, X_test):
+        '''
+            predict() - method that returns predictions for the nest month items sold
+            Input:
+                X_test - (pd.DataFrame) dataframe with contains number of items sold in the past and this month
+            Output:
+                y_pred - (np.array) array of predictions for the items sold next month
+        '''
+        if self.type_ == 'last_month':
+            y_pred = np.array(X_test['item_cnt_month'])
+        elif self.type_ == 'last_three_months':
+            y_pred = np.array(X_test['item_cnt_roll_mean'])
+        return y_pred
+
 
 def main():
     '''
@@ -106,10 +181,10 @@ def main():
     if len(sys.argv) == 4:
         sales_filepath, items_filepath, model_filepath = sys.argv[1:]
         print('Loading data...\n ')
-        data = preprocess_data(sales_filepath, items_filepath, use_shop_ids=range(46))
+        data = preprocess_data(sales_filepath, items_filepath, use_shop_ids=range(3))
 
         print('Cleaning and transforming data...')
-        X_train, Y_train, X_test, Y_test, X_predict, extended_predict_set = return_processed_data(data)
+        X_train, Y_train, X_test, Y_test, X_predict, extended_test_set, extended_predict_set = return_processed_data(data)
         
         print('Building model...')
         model = build_model()
@@ -117,17 +192,46 @@ def main():
         print('Training model...')
         model.fit(X_train, Y_train)
 
-        print('Evaluating model...')        
-        mae, mae_non_zero = evaluate_model(model, X_test, Y_test)
+        print('Evaluating model...') 
 
-        print('MAE on test data is {}, mae non-zero on test data is {}'.format(mae, mae_non_zero))
-        print('XGBRegressor with this parameters turned out to be the best:', model.best_estimator_.get_params())
+        # Compare with base estimator that returns last 3-month average of items sold
+        estimator_last_3_months = base_estimator('last_three_months')
 
-        print(model.best_params_)
+        mae, mae_base, error_better, cash_better, total_sales = evaluate_model(model, estimator_last_3_months, X_test, Y_test, extended_test_set)       
+
+        min_month = extended_test_set['month'].iloc[0]
+        min_year = extended_test_set['year'].iloc[0]
+        max_month = extended_test_set['month'].iloc[-1]
+        max_year = extended_test_set['year'].iloc[-1]
+        
+        if error_better >= 0:
+            result_word = 'YES'
+        else:
+            result_word = 'NO'
+        
+        print('Can you trust the given forecast? Probably {}.'.format(result_word))
+        print('To answer that question we checked the forecast-genereating model on test period: from {}/{} to the end of {}/{}.'.format(min_month, min_year, max_month, max_year))
+        print('Then, the model was compared to a simple estimator which forecasts items sold next month as the average of items sold last 3 months.')
+        print('Mean average error for the model on test data is {} items.'.format(mae) )
+        print('Mean average error for the simple estimator on test data is {} items.'.format(mae_base) )
+        
+        if error_better > 0:
+            result_word = 'better'
+        elif error_better == 0:
+            result_word = ' different - meaning produced the same error'
+        else:
+            result_word = 'worse'
+        
+        print('In terms of the number of items sold, the model was {}% {} compared to the simple estimator.'.format(round(100*error_better,2), result_word))
+        saving = int(total_sales*cash_better)
+        if cash_better > 0:
+            print('In terms of the money, the model could have helped to better allocate {} or {}% of total sales of {} during the test period.*'.format(saving, round(100*cash_better,2), total_sales))
+            print('   *These figures are calculated by comparing model forecast with the simple estimator and could have been achivied by stocking items that customers would purchase and not stocking items that were not ultimately purchased.')
+
+        print('Model with these parameters turned out to be the best:', model.get_params())
 
         print('Saving model...\n    MODEL: {}'.format(model_filepath))
         save_model(model, model_filepath)
-
         print('Trained model saved!')
 
     else:

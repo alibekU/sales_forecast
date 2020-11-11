@@ -187,26 +187,19 @@ def add_global_features(data_monthly_ext):
     # define size of a rolling window
     rolling_window_size = 3
     # --- Calculate rolling statistics
-    # keep functions in a list to iterate
-    functions = [lambda column: column.rolling(window=rolling_window_size, min_periods=1).mean(), 
-                lambda column: column.rolling(window=rolling_window_size, min_periods=1).max(), 
-                lambda column: column.rolling(window=rolling_window_size, min_periods=1).min(), 
-                lambda column: column.rolling(window=rolling_window_size, min_periods=1).std()]
-    # these are suffixes to add to column names to generate new names
-    suffixes = ['mean', 'max', 'min', 'std']
+    def function_mean(column):
+        return column.rolling(window=rolling_window_size, min_periods=1).mean()
 
-    # create len(functions) new features
-    for suff, func in zip(suffixes, functions):
-        data_monthly_ext['item_cnt_roll_{}'.format(suff)] = data_monthly_ext.groupby(['shop_id','item_id'])['item_cnt_month'].apply(func)
-
-    # Fill the empty std features with 0
-    data_monthly_ext['item_cnt_roll_std'] = data_monthly_ext['item_cnt_roll_std'].fillna(0)
-
+    data_monthly_ext['item_cnt_roll_mean'] = data_monthly_ext.groupby(['shop_id','item_id'])['item_cnt_month'].apply(function_mean)
+    
     # store average number of items sold per month for each item in a shop up to this point using pd.expanding function
-    data_monthly_ext['item_mean_past'] = data_monthly_ext.groupby(['shop_id', 'item_category_id'])[['item_cnt_month']].expanding().mean().values
-
-    # store average number of items sold per month for each category in a shop up to this point using pd.expanding function
-    data_monthly_ext['category_mean_past'] = data_monthly_ext.groupby(['shop_id', 'item_id'])[['item_cnt_month']].expanding().mean().values
+    data_monthly_ext['shop_item_mean_past'] = data_monthly_ext.groupby(['shop_id', 'item_id'])[['item_cnt_month']].expanding().mean().values
+    
+    # store average number of items sold per month for each year up to this point using pd.expanding function
+    data_monthly_ext['year_mean_past'] = data_monthly_ext.groupby(['year'])[['item_cnt_month']].expanding().mean().values
+    
+    # store average number of items sold per month for each month up to this point using pd.expanding function
+    data_monthly_ext['month_mean_past'] = data_monthly_ext.groupby(['month'])[['item_cnt_month']].expanding().mean().values
 
 
     # let us calculate lags for the past 3 months
@@ -215,7 +208,7 @@ def add_global_features(data_monthly_ext):
     # --- generate shifted number of items sold from the past 1-3 months
     for lag in number_lags:
         feature_name = 'item_cnt_shifted{}'.format(lag)
-        data_monthly_ext[feature_name] = data_monthly_ext.sort_values('date_block_num').groupby(['shop_id', 'item_id'])['item_cnt_month'].shift(lag)
+        data_monthly_ext[feature_name] = data_monthly_ext.groupby(['shop_id', 'item_id'])['item_cnt_month'].shift(lag)
         # Fill the empty shifted features with 0
         data_monthly_ext[feature_name] = data_monthly_ext[feature_name].fillna(0)
 
@@ -327,26 +320,20 @@ def add_set_features(train, test):
     shop_item_means = generate_statistics(train, ['shop_id', 'item_id'], ['shop_item_mean_future'])
     train = pd.merge(train, shop_item_means, on=['shop_id', 'item_id'], how='left')
     test = pd.merge(test, shop_item_means, on=['shop_id', 'item_id'], how='left')
-
-    # Averages for each shop across all years, months and items
-    shop_means = generate_statistics(train, ['shop_id'], ['shop_mean_future'])
-    train = pd.merge(train, shop_means, on=['shop_id'], how='left')
-    test = pd.merge(test, shop_means, on=['shop_id'], how='left')
-
+    
     # Averages for each category across all shops, months and years
     category_means = generate_statistics(train, ['item_category_id'], ['category_mean_future'])
     train = pd.merge(train, category_means, on=['item_category_id'], how='left')
     test = pd.merge(test, category_means, on=['item_category_id'], how='left')
-
-    # Averages for each year across all shops, months and items
-    year_means = generate_statistics(train, ['year'], ['year_mean_future'])
-    train = pd.merge(train, year_means, on=['year'], how='left')
-    test = pd.merge(test, year_means, on=['year'], how='left')
-
+    
     # Averages for each month across all shops, years and items
     month_means = generate_statistics(train, ['month'], ['month_mean_future'])
     train = pd.merge(train, month_means, on=['month'], how='left')
-    test = pd.merge(test, month_means, on=['month'], how='left')    
+    test = pd.merge(test, month_means, on=['month'], how='left')
+
+    # Fill the empty features with 0
+    train = train.fillna(0)
+    test = test.fillna(0)
 
     return train, test
 
@@ -372,9 +359,9 @@ def split_data_labels(train_set, test_set, predict_set):
             X_predict - (pd.DataFrame) features for predicting unknown data  
     '''
     # create train and test sets and labels. 
-    X_train = train_set.drop(['itm_cnt_nxt_mnth', 'date_block_num'], axis=1)
+    X_train = train_set.drop(['itm_cnt_nxt_mnth'], axis=1)
     Y_train = train_set['itm_cnt_nxt_mnth'].astype(int)
-    X_test = test_set.drop(['itm_cnt_nxt_mnth', 'date_block_num'], axis=1)
+    X_test = test_set.drop(['itm_cnt_nxt_mnth'], axis=1)
     Y_test = test_set['itm_cnt_nxt_mnth'].astype(int)
     
     # create X_predict to predct next unseen month
@@ -427,6 +414,7 @@ def return_processed_data(data):
             X_test - (pd.DataFrame) testing features
             Y_test - (pd.DataFrame) testing labels
             X_predict - (pd.DataFrame) data set (features) for predicting unknown data
+            extended_test_set - (pd.DataFrame) data set of test data features, like X_test, but with all the original columns (like item_id and etc.) to return to a user later
             extended_predict_set - (pd.DataFrame) data set for predicting data, like X_predict, but with all the original columns (like item_id and etc.) to return to a user later
     '''
     data = check_data_correctnes(data)
@@ -440,22 +428,19 @@ def return_processed_data(data):
 
 
     # --- select features that will be used for training, testing and predicting
-    features = ['month_mean_future', 'year_mean_future', 'item_mean_future', 'shop_mean_future', 'shop_item_mean_future', 'category_mean_future',
-                'category_mean_past', 'item_mean_past', 
-                'item_cnt_month', 'item_cnt_day_mean', 
-                'item_cnt_roll_mean', 'item_cnt_roll_std', 
-                'item_cnt_shifted1', 'item_cnt_shifted2', 'item_cnt_shifted3', 
-                'item_trend', 'month']
+    features = ['shop_item_mean_future', 'item_cnt_month', 'item_trend', 'month_mean_future', 'item_cnt_roll_mean', 'item_cnt_day_mean', 
+                'month_mean_past', 'item_mean_future', 'category_mean_future', 'shop_item_mean_past', 'year_mean_past']
     # ---- Select subsets
     # First, save the data we will be predicting before we will select features for modelling from it - 'extended_predict_set'. 
     # This will allow us to return prediction in a clear format to the user
+    extended_test_set = X_test
     extended_predict_set = X_predict
     # --- subset other Xs            
     X_train = X_train[features]
     X_test = X_test[features]
     X_predict = X_predict[features]
 
-    return X_train, Y_train, X_test, Y_test, X_predict, extended_predict_set
+    return X_train, Y_train, X_test, Y_test, X_predict, extended_test_set, extended_predict_set
 
 def create_prediction_df(extended_predict_set, Y_predict, columns = ['year', 'month', 'shop_id', 'item_id', 'item_category_id', 'item_price_avg']):
     '''
