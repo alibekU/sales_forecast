@@ -77,13 +77,19 @@ def build_model():
 
 def evaluate_model(model, base_estimator, X_test, y_test, extended_test_set):
     '''
-        evaluate_model() - function that evaluates an sklearn model
+        evaluate_model() - function that evaluates an sklearn model on the test set
         Input:
             model - a trained sklearn model capable of  'predict' methods
+            base_estimator - object of class base_estimator from train_model.py
             X_test - (pd.DataFrame) data for testing, features
             y_test - (np.array) array with labels for testing, targets
+            extended_test_set - (pd.DataFrame) same as X_test but all the columns for creating a meaningful report
         Output:
             MAE - (float) - mean absolute error across all shops and items montly data for period of time defined in X_test dataset
+            MAE_base (float) - mean absolute error for the base_estimator
+            error_better - (float) by how much model is better than the base_estimator in terms of the number of items, negative number if not better. 0.5 would mean better by 50%
+            cash_better - (float) by how much model is better than the base_estimator in terms of the money, negative number if not better.
+            total_sales - (int) amount of sales in terms of the money during the testing period
     '''
     
     y_test = np.array(y_test)
@@ -106,7 +112,7 @@ def evaluate_model(model, base_estimator, X_test, y_test, extended_test_set):
     elif error_diff == 0:
         error_better = 0
     else:
-        error_better =  None    
+        error_better =  0    
     
     prices = np.array(extended_test_set['item_price_avg'])
     total_sales = np.sum(prices*y_test)
@@ -124,7 +130,7 @@ def evaluate_model(model, base_estimator, X_test, y_test, extended_test_set):
     elif cash_diff == 0:
         cash_better = 0
     else:
-        cash_better = None
+        cash_better = 0
         
     return round(MAE,2), round(MAE_base,2) , round(error_better,2), round(cash_better,2), int(total_sales)
 
