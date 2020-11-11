@@ -35,9 +35,10 @@ After downloading, go to the the 'sales_forecast/app' folder and: <br/>
 2. Go to http://0.0.0.0:3001/
 
 **To re-train the model:**<br/>
-Currently the web app uses app/models/forecast_v1.pkl model that was pre-trained on 40 shops.<br/>
+Currently the web app uses app/models/forecast_v1.pkl model that was pre-trained on 30 shops (../models/forecast_best_linear.pkl file).<br/>
 However, if you want to create a new model and re-train it run the following commands in the 'sales_forecast/app' directory. <br/>
-Please note it will take 3-4 hours to train on 40 shops.<br/>
+Currently the re-building of the model will only involve 3 shops tp save time.<br/>
+You can change invoking preprocess_data() function of app/train_model.py, specifically `use_shop_ids=range(3)` parameter to use more shops in the training <br/>
 To run pipeline that cleans data and trains the model run this command from app/ directory<br/>
         `python train_model.py ../data/sales_train.csv ../data/items.csv ../models/forecast.pkl`
 
