@@ -17,6 +17,7 @@ A web app for forecasting sales given historical data
 
 # Project Definition
 A web application that predicts sales volumes (number of items sold) next month based on historical data. <br/>
+You can try it here: https://sales-volumes-forecast.herokuapp.com <br/>
 This potentaially could be interesting to small/medium business owners in retailing to help them plan their supply better.<br/>
 Machine Learning has technologies for such task for a long time, but in many cases using them requires buying expensive software solustions or hiring a team of analytics.<br/>
 A good forecasting tool would automize the tedious process of planning for the next month and also improve expert-based forecasts using data science.<br/>
@@ -38,7 +39,8 @@ After downloading, go to the the 'sales_forecast/app' folder and: <br/>
 Currently the web app uses app/models/forecast_v1.pkl model that was pre-trained on 30 shops (../models/forecast_best_linear.pkl file).<br/>
 However, if you want to create a new model and re-train it run the following commands in the 'sales_forecast/app' directory. <br/>
 Currently the re-building of the model will only involve 3 shops tp save time.<br/>
-You can change invoking preprocess_data() function of app/train_model.py, specifically `use_shop_ids=range(3)` parameter to use more shops in the training <br/>
+You can change invoking preprocess_data() function of app/train_model.py, specifically `use_shop_ids=range(3)` parameter to use more shops in the training, but please note that training
+on a large number (like 30) of shops can take several hours to complete<br/>
 To run pipeline that cleans data and trains the model run this command from app/ directory<br/>
         `python train_model.py ../data/sales_train.csv ../data/items.csv ../models/forecast.pkl`
 
