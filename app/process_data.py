@@ -42,6 +42,34 @@ def load_data_excel(data_filepath):
     '''
     return pd.read_excel(data_filepath)
 
+
+def save_data_csv(df,filepath):
+    '''
+        save_data() - a function that saves a Pandas dataframe into a CSV file for later training
+                    Not used on new data from web app as that data will be only used for testing and predicting using existing model
+        Input:
+            df -  a Pandas dataframe with data to save
+            filepath - a path to a CSV file where to save the data
+        Output:
+            None
+    '''
+    df.to_csv(filepath, index=False)
+
+    return None
+
+def save_data_excel(df,filepath):
+    '''
+        save_data() - a function that saves a Pandas dataframe into an excel file.
+        Input:
+            df -  a Pandas dataframe with data to save
+            filepath - a path to an excel file where to save the data
+        Output:
+            None
+    '''
+    df.to_excel(filepath, index=False)
+
+    return None
+
 def check_data_correctnes(data):
     '''
         check_data_correctnes() - function that checks correctness of a dataframe format and data, and assigns a shop_id if none is given
@@ -59,7 +87,7 @@ def check_data_correctnes(data):
 
 def clean_and_aggreagate(data):
     '''
-        clean_and_aggreagate() - function that cleanes, aggregates and sorts a Pandas dataframe for training or predicting sales
+        clean_and_aggreagate() - function that cleanes, aggregates, removes outliers and sorts a Pandas dataframe for training or predicting sales
         Input:
             data - (pd.DataFrame) a Pandas dataframe with sales data
         Output:
@@ -99,7 +127,36 @@ def clean_and_aggreagate(data):
     # sort the dataframe for future analysis
     data_monthly = data_monthly.sort_values(by=['year', 'month', 'shop_id', 'item_id']).reset_index(drop=True)
 
+    # --- Replace outliers with averages for each item-shop combination each month using z-statistics
+
+    # Group data by shop and item and then calculate std, mean and z-statistics for each item in each shop. 
+    agg_stats = data_monthly.groupby(['shop_id', 'item_id']).agg({'item_cnt_month': ['std', 'mean']}).reset_index()
+
+    # Pandas returns std of Nan for all the same values, not zeroes, sos replace with zeroes
+    agg_stats = agg_stats.fillna(0)
+
+    # rename columns
+    agg_stats.columns = agg_stats.columns.map(''.join)
+    agg_stats = agg_stats.rename(columns={'item_cnt_monthstd': 'item_cnt_month_std', 'item_cnt_monthmean':'item_cnt_month_mean'})
+
+    # add to the data_monthly calculated meand and std
+    data_monthly = data_monthly.merge(agg_stats, on=['shop_id', 'item_id'], how='left')
+
+    # first assign to 'z_statistics' difference between number of items this month and the average for this item at this shop
+    data_monthly['z_statistics'] = data_monthly['item_cnt_month'] - data_monthly['item_cnt_month_mean']
+    # then selece subset of 'data_monthly' where std is not zero, and there divide the difference we got above by the std. 
+    # if std is zero then no need to do anything as all values are the same, and z_statistics will be 0 
+    data_monthly.loc[data_monthly['item_cnt_month_std'] != 0, 'z_statistics'] = data_monthly.loc[data_monthly['item_cnt_month_std'] != 0, 'z_statistics'] / data_monthly.loc[data_monthly['item_cnt_month_std'] != 0, 'item_cnt_month_std']  
+    # assing z_statistics absolute values of it
+    data_monthly.loc[:,'z_statistics'] = data_monthly['z_statistics'].abs()
+
+    z_threshold = 3
+    # if in particular month we sold number of items outside of 3 stds from mean, 
+    # let's call that row an outlier and replace that number of items sold with a mean.
+    data_monthly.loc[data_monthly['z_statistics'] > z_threshold, 'item_cnt_month'] = data_monthly.loc[data_monthly['z_statistics'] > z_threshold, 'item_cnt_month_mean']
+
     return data_monthly
+
 
 def add_empty_rows(data_monthly):
     '''
@@ -178,7 +235,7 @@ def add_global_features(data_monthly_ext):
     months = np.array(data_monthly_ext['month'])
     # for better performance create a vectorized function that computes block number (order of month from starting month)
     calculate_block_num = np.vectorize(lambda year, month: (year*12 + month)- starting_month_agg)
-    # number of months since year 0 in starting date - this will be subtracted to understand how many months we have moved ahead from start
+    # number of months since year 0 in starting date - to understand how many months we have moved ahead from start
     data_monthly_ext['date_block_num'] = calculate_block_num(years, months)
 
     # Feature engineering
@@ -194,6 +251,12 @@ def add_global_features(data_monthly_ext):
     
     # store average number of items sold per month for each item in a shop up to this point using pd.expanding function
     data_monthly_ext['shop_item_mean_past'] = data_monthly_ext.groupby(['shop_id', 'item_id'])[['item_cnt_month']].expanding().mean().values
+
+    # store average number of items sold per month for each item up to this point using pd.expanding function
+    data_monthly_ext['item_mean_past'] = data_monthly_ext.groupby(['item_id'])[['item_cnt_month']].expanding().mean().values
+
+    # store average number of items sold per month for each category up to this point using pd.expanding function
+    data_monthly_ext['category_mean_past'] = data_monthly_ext.groupby(['item_category_id'])[['item_cnt_month']].expanding().mean().values
     
     # store average number of items sold per month for each year up to this point using pd.expanding function
     data_monthly_ext['year_mean_past'] = data_monthly_ext.groupby(['year'])[['item_cnt_month']].expanding().mean().values
@@ -263,79 +326,11 @@ def split_train_test_predict(data_monthly_ext):
     test_set = data_monthly_ext[(data_monthly_ext['date_block_num'] > train_high) & (data_monthly_ext['date_block_num'] < test_high )].copy()
     predict_set = data_monthly_ext[data_monthly_ext['date_block_num'] == test_high].copy()
 
-    # in train and test get rid of the null values in target variable
+    # get rid of the null values in target variable
     train_set = train_set.dropna(subset=['itm_cnt_nxt_mnth'])
     test_set = test_set.dropna(subset=['itm_cnt_nxt_mnth'])
 
     return train_set, test_set, predict_set
-
-
-
-def add_set_features(train, test):
-    '''
-        add_set_features() - function for more feature engineering done on each train and test sets to avoid data leakage.
-                            We will be calculating statistics based on the sales in the next month, so cannot use it on predict set as
-                            it does not have information on the future sales. On test set we are setting values calculated based on train data
-                            because we want to avoid data leakage and test data "knowing" about sales we want to predict.
-        Input:
-            train_set - (pd.DataFrame) training data
-            test_set - (pd.DataFrame) testing data to see how we performed
-        Output:
-            train_set - (pd.DataFrame) training data with new features
-            test_set - (pd.DataFrame) testing data with new features based on training data without data that can help forecast values on test,
-                        only past values from train are added here
-    '''
-    # each new feature will be a statistics computed by grouping and aggregating next month sales by certain dimensions
-    # we will generate that grouped statistics and then merge larger ungrouped train and test dataframes with it
-    # computing on train data for both train and test as we don't want to give away any information to test set
-    # as the calculations are done on future sale and since we are dealing with timeseries
-
-    def generate_statistics(dataset, group_by_columns, new_column_names, agg_column='itm_cnt_nxt_mnth', agg_function_names=['mean']):
-        '''
-            generate_statistics() - helper internal function for generating statistics of a dataset using grouping and aggregation
-            Input:
-                dataset - (pd.DataFrame) data frame to calculate statistics on
-                group_by_columns - (list of str) columns to group by
-                new_column_names - (list of str) how to name new resulting columns
-                agg_column - (str) on which column the calculation will be performed
-                agg_function_names - (list of str) which aggregate functions to use on 'agg_column' after grouping
-
-            Output:
-                res - (pd.DataFrame) dataframe with 'new_column_names' columns - result of grouping and applying aggreagate functions
-        '''
-        res = dataset.groupby(group_by_columns).agg({agg_column: agg_function_names})
-        res.columns = new_column_names
-        res.reset_index(inplace=True)
-        return res
-
-
-    # --- Add mean statistic features to train and test sets.
-
-    # Averages for each item across all shops, months and years
-    item_means = generate_statistics(train, ['item_id'], ['item_mean_future'])
-    train = pd.merge(train, item_means, on=['item_id'], how='left')
-    test = pd.merge(test, item_means, on=['item_id'], how='left')
-
-    # Averages for each item in each shop across all months and years
-    shop_item_means = generate_statistics(train, ['shop_id', 'item_id'], ['shop_item_mean_future'])
-    train = pd.merge(train, shop_item_means, on=['shop_id', 'item_id'], how='left')
-    test = pd.merge(test, shop_item_means, on=['shop_id', 'item_id'], how='left')
-    
-    # Averages for each category across all shops, months and years
-    category_means = generate_statistics(train, ['item_category_id'], ['category_mean_future'])
-    train = pd.merge(train, category_means, on=['item_category_id'], how='left')
-    test = pd.merge(test, category_means, on=['item_category_id'], how='left')
-    
-    # Averages for each month across all shops, years and items
-    month_means = generate_statistics(train, ['month'], ['month_mean_future'])
-    train = pd.merge(train, month_means, on=['month'], how='left')
-    test = pd.merge(test, month_means, on=['month'], how='left')
-
-    # Fill the empty features with 0
-    train = train.fillna(0)
-    test = test.fillna(0)
-
-    return train, test
 
 
 def split_data_labels(train_set, test_set, predict_set):
@@ -361,44 +356,13 @@ def split_data_labels(train_set, test_set, predict_set):
     # create train and test sets and labels. 
     X_train = train_set.drop(['itm_cnt_nxt_mnth'], axis=1)
     Y_train = train_set['itm_cnt_nxt_mnth'].astype(int)
+
     X_test = test_set.drop(['itm_cnt_nxt_mnth'], axis=1)
     Y_test = test_set['itm_cnt_nxt_mnth'].astype(int)
+
+    X_predict = predict_set[X_train.columns]
     
-    # create X_predict to predct next unseen month
-    history = pd.concat([train_set, test_set]).drop_duplicates(subset=['item_id'], keep='last')
-    X_predict = pd.merge(predict_set, history, on=['item_id'], how='left', suffixes=['', '_'])
-    X_predict.drop('itm_cnt_nxt_mnth', axis=1, inplace=True)
-    X_predict = X_predict[X_train.columns]
-
     return X_train, Y_train, X_test, Y_test, X_predict
-
-
-def save_data_csv(df,filepath):
-    '''
-        save_data() - a function that saves a Pandas dataframe into a CSV file for later training
-                    Not used on new data from web app as that data will be only used for testing and predicting using existing model
-        Input:
-            df -  a Pandas dataframe with data to save
-            filepath - a path to a CSV file where to save the data
-        Output:
-            None
-    '''
-    df.to_csv(filepath, index=False)
-
-    return None
-
-def save_data_excel(df,filepath):
-    '''
-        save_data() - a function that saves a Pandas dataframe into an excel file.
-        Input:
-            df -  a Pandas dataframe with data to save
-            filepath - a path to an excel file where to save the data
-        Output:
-            None
-    '''
-    df.to_excel(filepath, index=False)
-
-    return None
     
 
 def return_processed_data(data):
@@ -423,13 +387,11 @@ def return_processed_data(data):
     data_monthly_ext = add_global_features(data_monthly_ext)
     data_monthly_ext = add_labels(data_monthly_ext)
     train_set, test_set, predict_set = split_train_test_predict(data_monthly_ext)
-    train_set, test_set = add_set_features(train_set, test_set)
     X_train, Y_train, X_test, Y_test, X_predict = split_data_labels(train_set, test_set, predict_set)
 
-
     # --- select features that will be used for training, testing and predicting
-    features = ['shop_item_mean_future', 'item_cnt_month', 'item_trend', 'month_mean_future', 'item_cnt_roll_mean', 'item_cnt_day_mean', 
-                'month_mean_past', 'item_mean_future', 'category_mean_future', 'shop_item_mean_past', 'year_mean_past']
+    features = ['item_cnt_month', 'item_trend', 'item_cnt_roll_mean', 'item_cnt_day_mean', 
+                'month_mean_past', 'item_mean_past', 'category_mean_past', 'shop_item_mean_past', 'year_mean_past']
     # ---- Select subsets
     # First, save the data we will be predicting before we will select features for modelling from it - 'extended_predict_set'. 
     # This will allow us to return prediction in a clear format to the user

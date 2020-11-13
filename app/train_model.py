@@ -58,8 +58,8 @@ def build_model():
     # To save time the gridsearch cv is commented out as I've already ran it before and inputted parameters above
     '''
     parameters = {
-                    'Regressor__tol': [0.0001, 0.0005]
-                    'Regressor__max_iter': [300, 400]
+                    'Regressor__tol': [0.0001, 0.0005],
+                    'Regressor__max_iter': [300, 400],
                     'Regressor__epsilon': [1.3, 1.35]
                  }
 
