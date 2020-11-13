@@ -6,19 +6,17 @@
     <div class="container">
         <hr />
         <div class="col-lg-offset-2">
-            <a href="{{ url_for('.download_file', filename = filename) }}">Please download excel with your foreacts here</a>
-        </div>
-        <div class="col-lg-offset-2">
-            <p class="text-left">Can you trust the given forecast? Probably <strong>{{result_word1}}</strong>.</p>
-            <p class="text-left">To answer that question we checked the forecast-genereating model on test period: from {{date_min}} to the end of {{date_max}}.</p>
+            <p class="text-left">Please download excel with your foreacts <a href="{{ url_for('.download_file', filename = filename) }}">here</a></p>
+            <p class="text-left">Can you trust the given forecast? Probably <strong style="color:rgb(0, 132, 255);text-decoration: underline;">{{result_word1}}</strong>.</p>
+            <p class="text-left">To answer that question we checked the forecast-genereating model on <strong>your actual data</strong> on test period: from <strong style="color:rgb(0, 132, 255);text-decoration: underline;">{{date_min}}</strong> to the end of <strong style="color:rgb(0, 132, 255);text-decoration: underline;">{{date_max}}</strong>.</p>
             <p class="text-left">Then, the model was compared to a simple estimator which forecasts items sold next month as the average of items sold last 3 months.</p>
             <ul>
-                <li><p class="text-left">Mean average error for the model on test data is <strong>{{mae}}</strong> items.</p></li>
-                <li><p class="text-left">Mean average error for the simple estimator on test data is <strong>{{mae_base}}</strong> items.</p></li>
-                <li><p class="text-left">In terms of the number of items sold, the model was <strong>{{error_better}}%</strong> {{result_word2}} compared to the simple estimator.</p></li>
+                <li><p class="text-left">Mean average error for the model on your data during test period is <strong style="color:rgb(0, 132, 255);text-decoration: underline;">{{mae}}</strong> items.</p></li>
+                <li><p class="text-left">Mean average error for the simple estimator on your data during test period is <strong style="color:rgb(0, 132, 255);text-decoration: underline;">{{mae_base}}</strong> items.</p></li>
+                <li><p class="text-left">In terms of the number of items sold, the model was <strong style="color:rgb(0, 132, 255);text-decoration: underline;">{{error_better}}%</strong> {{result_word2}} compared to the simple estimator.</p></li>
                 {% if saving > 0 %}
-                <li><p class="text-left">In terms of the money, the model could have helped to better allocate {{saving}} or <strong>{{cash_better}}%</strong> of total sales of {{total_sales}} during the test period.*</p></li>
-                    <p class="text-left">   *These figures are calculated by comparing model forecast with the simple estimator and could have been achivied by stocking items that customers would purchase and not stocking items that were not ultimately purchased.</p>
+                <li><p class="text-left">In terms of the money, the model could have helped you better allocate {{saving}} or <strong style="color:rgb(0, 132, 255);text-decoration: underline;">{{cash_better}}%</strong> of total sales of {{total_sales}} during the test period.*</p></li>
+                    <p class="text-left">   *These figures are calculated by comparing model forecast with the simple estimator and could have been achieved by stocking items that customers would purchase and not stocking items that were not ultimately purchased.</p>
                 {% endif %}
             </ul>
         </div>

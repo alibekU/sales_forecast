@@ -41,11 +41,11 @@
             <div class="col-lg-12 form-group-lg">
                     <p class="text-left">
                         Instructions: <br/>
-                        1. Download the template excel to see an example of input file structure (more on that below) <br/>
-                        2. Create your own excel with at least 6 month of sales data similarly to the template excel <br/>
+                        1. Download the template excel to see an example of input file structure<br/>
+                        2. Create your own excel with at least 6 month of sales data similarly to the template<br/>
                         3. Upload your excel with data by pressing "Choose file" and locating the file <br/> 
                         4. Press 'Upload data and run prediction' button to generate a next month forecast<br/>
-                        5. A link that allows to download results will apper after predicting is complete <br/>
+                        5. A link that allows to download results will apper after forecast is ready<br/>
                     </p> 
                     <div class="col-lg-offset-5">
                         <a href="{{ url_for('.download_template') }}">Download excel template</a>
@@ -76,15 +76,15 @@
             <div class="col-lg-12 form-group-lg">
                 <h3 class="text-center">File requirements:</h3>
                     <h5 class="text-center">
-                        Your excel ('xls', 'xlsx','xml' or 'xlsm' formats) must have at least 6 month of sales data, with each row as a transaction or daily aggregate, and the following fields:
+                        Your excel file must have at least 6 month of sales data, but no more than 10 thousand rows at this point, with each row as a transaction or daily aggregate, and the following fields:
                     </h5>
-                    <p class="text-left">'date' - (mandatory field; text) date of sales transaction in the format dd.mm.yyyy, for example 31.12.2019 for December 31, 2019.</p>
-                    <p class="text-left">'shop_id' - (can be left blank if data is only for one shop; text or number ) id or name of the shop, must be unique for each separate shop.</p>
-                    <p class="text-left">'item_id' - (mandatory field; text or number) id or name of a sold item, must be unique for each separate item.</p>
-                    <p class="text-left">'item_price' - (mandatory field; number) price of a sold item.</p>
-                    <p class="text-left">'item_cnt_day' - (mandatory field; number) number of sold items in this transaction.</p>
-                    <p class="text-left">'item_name' - (can be left blank) name of a sold item if you want to have both id and name for an item.</p>
-                    <p class="text-left">item_category_id' - (mandatory field; text or number) id or name of a category, must be unique for each separate category.</p>
+                    <p class="text-left">'date' - [mandatory field; text] date of sales transaction in the format dd.mm.yyyy, for example 31.12.2019 for December 31, 2019</p>
+                    <p class="text-left">'shop_id' - [can be left blank if only one shop; text or number] id or name of the shop, must be unique for each separate shop</p>
+                    <p class="text-left">'item_id' - [mandatory field; text or number] id or name of a sold item, must be unique for each separate item</p>
+                    <p class="text-left">'item_price' - [mandatory field; number] price of a sold item</p>
+                    <p class="text-left">'item_cnt_day' - [mandatory field; number] number of sold items in this transaction</p>
+                    <p class="text-left">'item_name' - [can be left blank] name of a sold item if you want to have both id and name for an item</p>
+                    <p class="text-left">'item_category_id' - [mandatory field; text or number] id or name of a category, must be unique for each separate category</p>
             </div>
         </div>
     </div>
