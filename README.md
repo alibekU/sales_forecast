@@ -19,12 +19,13 @@ A web app for forecasting sales given historical data
 A web application that predicts sales volumes (number of items sold) next month based on historical data. <br/>
 You can try it here: https://sales-volumes-forecast.herokuapp.com <br/>
 This potentaially could be interesting to small/medium business owners in retailing to help them plan their supply better.<br/>
-Machine Learning has technologies for such task for a long time, but in many cases using them requires buying expensive software solustions or hiring a team of analytics.<br/>
-A good forecasting tool would automize the tedious process of planning for the next month and also improve expert-based forecasts using data science.<br/>
+Machine Learning has technologies for such task for a long time, but in many cases using them requires buying expensive software solustions or hiring a team of analysts.<br/>
+A good forecasting tool would automize the tedious process of planning for the next month and also improve guess-based forecasts by using data science instead.<br/>
+
 
 # Installation
-1. In order to install the code and deploy the app locally please download from Github: `git clone https://github.com/alibekU/pipsales_forecast`.
-2. You may want to set up a new virtual environment: `python3 -m venv /path/to/new/virtual/environment` 
+1. In order to deploy the app locally please download from Github: `git clone https://github.com/alibekU/sales_forecast` and go to the new `sales_forecast` folder
+2. You may want to set up a new virtual environment: `python3 -m venv virtual_environment_name`  and activate it by running `source virtual_environment_name/bin/activate`
 3. Then, use pip to install all the needed packages: `pip install -r requirements.txt`
 
 # Usage
@@ -32,101 +33,133 @@ A good forecasting tool would automize the tedious process of planning for the n
 After downloading, go to the the 'sales_forecast/app' folder and: <br/>
 1. **From the app/ directory** run the following command to launch your web app <br/>
     `python run.py`
-
-2. Go to http://0.0.0.0:3001/
+2. Go to http://0.0.0.0:3001/ in your browser
 
 **To re-train the model:**<br/>
-Currently the web app uses app/models/forecast_v1.pkl model that was pre-trained on 30 shops (../models/forecast_best_linear.pkl file).<br/>
-However, if you want to create a new model and re-train it run the following commands in the 'sales_forecast/app' directory. <br/>
-Currently the re-building of the model will only involve 3 shops tp save time.<br/>
+Currently the web app uses app/models/forecast_best_linear.pkl model that was pre-trained on 30 shops (../models/forecast_best_linear.pkl file).<br/>
+However, if you want to create a new model and re-train it, run the following commands in the 'sales_forecast/app' directory: <br/>
+`python train_model.py ../data/sales_train.csv ../data/items.csv ../models/forecast.pkl` <br/>
+By default the re-building of the model will involve only 3 shops to save time.<br/>
 You can change invoking preprocess_data() function of app/train_model.py, specifically `use_shop_ids=range(3)` parameter to use more shops in the training, but please note that training
 on a large number (like 30) of shops can take several hours to complete<br/>
-To run pipeline that cleans data and trains the model run this command from app/ directory<br/>
-        `python train_model.py ../data/sales_train.csv ../data/items.csv ../models/forecast.pkl`
 
 
 # Web Application
-The app can be found at https://sales-volumes-forecast.herokuapp.com or hosted locally using above instructions.
+The app can be found at https://sales-volumes-forecast.herokuapp.com or hosted locally using the above instructions. Instructions are available on the home webpage. Here the main page for data input:
+<br/>
 ![Web Application Interface](images/screenshot1.png)
 <br/>
-Instructions:
-1. Download the template excel to see an example of input file structure (more on that below) 
-2. Create your own excel with at least 6 month of sales data similarly to the template excel 
-3. Upload your excel with data by pressing "Choose file" and locating the file 
-4. Press 'Upload data and run prediction' button to generate a next month forecast
-5. A link that allows to download results will apper after predicting is complete 
+<br/>
+After running the model, the web app returns a report on how well the model performed on test data to gain user's confidence. Here is a resulting report for the template data:
+![plot2](images/screenshot2.png)
+
 
 # Project structure 
-data\ <br/>
--sales_train.csv - data with sales transactions for 60 shops in 3 years from https://www.kaggle.com/c/competitive-data-science-predict-future-sales/data<br/>
--items.csv - data with item categories for 60 shops in 3 years from https://www.kaggle.com/c/competitive-data-science-predict-future-sales/data<br/>
-models\ <br/>
--forecast_v1.pkl - a Pickle file, saved regression model trained on 40 shops data<br/>
--forecast.pkl - a Pickle file, saved regression model trained on 3 shops data<br/>
-app\ <br/>
--run.py - the main script of Flask web app <br/>
--process_data.py - functions to clean, generate features and split data for predicting<br/>
--train_model.py - functions to train and evaluate a model. Run this file in command line to re-build a model<br/>
--templates\ <br/>
- --master.html - main html page template <br/>
- --resulst.html - a template for displaying results <br/>
- -uploads\ - folder with data uploaded by the users <br/>
- -downloads\ - folder with data for users to download <br/>
-images\ - pictures for the README file <br/>
-requirements.txt - a list of required PIP packages, result of `pip freeeze` command <br/>
-Procfile - code for Flask app launch at Heroku <br/>
-data_exloration_v1.ipynb - a Jupyter notebook with ML pipeline exploration <br/>
-README.md - readme file <br/>
+| data\ <br/>
+|-sales_train.csv - data with sales transactions for 60 shops in 3 years from https://www.kaggle.com/c/competitive-data-science-predict-future-sales/data<br/>
+|-items.csv - data with item categories for 60 shops in 3 years from https://www.kaggle.com/c/competitive-data-science-predict-future-sales/data<br/>
+
+| models\ <br/>
+|-forecast_best_linear.pkl - a Pickle file, saved regression model trained on 40 shops data<br/>
+|-forecast.pkl - a Pickle file, saved regression model trained on 3 shops data<br/>
+
+| app\ <br/>
+|-run.py - the main script of Flask web app <br/>
+|-process_data.py - functions to clean, generate features and split data for predicting<br/>
+|-train_model.py - functions to train and evaluate a model. Run this file in command line to re-build a model<br/>
+|-templates\ <br/>
+--|-master.html - main html page template <br/>
+--|-results.html - a template for displaying results <br/>
+|-uploads\ - folder with data uploaded by the users <br/>
+|-downloads\ - folder with data for users to download <br/>
+
+| images\ - pictures for the README file <br/>
+
+| requirements.txt - a list of required PIP packages, result of `pip freeeze` command <br/>
+| Procfile - code for Flask app launch at Heroku <br/>
+| data_exloration_v1.ipynb - a Jupyter notebook with ML pipeline exploration <br/>
+| README.md - readme file <br/>
+
 
 # Data
 The training data comes from Kaggle's Predict Future Sales competition https://www.kaggle.com/c/competitive-data-science-predict-future-sales/data <br/>
 
-Number of transactions is 1820364 <br/>
-Number of shops is 40 <br/>
-Number of categories is 74 <br/>
-Number of unique items is 19111 <br/>
-
-![plot6](images/screenshot6.png)
+I've used a subset of the data on first 30 shops (shop ids 0 to 29) to create a training and testing data sets.<br/>
+Number of transactions (rows) is  1 353 959<br/>
+Number of shops is 30 <br/>
+Number of categories is  73<br/>
+Number of unique items is  18 712<br/>
 <br/>
-We can see from the summary that the number of items sold per month on average (item_cnt_month) is less than 3. This could be challeinging if we would later try to predict on shops with high amount of sales. We might want to multiply some of the shops sales by some factor to generate data that will be useful in such cases.
+Here is a summary of that data:
+![plot3](images/screenshot3.png)
+
 
 # Analysis
-The model that was used for forecasting is XGBoost regressor as it showed the best results in terms of mean absolute error (MAE) of 0.8 (items/month) compared to Linear Regression (MAE of 1.8 on test data) and Random Forest (MAE of 1.2 on test data). <br/>
-In the code I currently use I am not performing grid search parameter optimization as it takes several hours to train the model without it, but in the future I plan to use less data and try to optimize the model.<br/>
-On the models that used less data (3 shops) I ran grid search parameter optimization with the following parameters: <br/>
-`parameters = { 
-                "max_depth"        : [ 1, 3], 
-                "min_child_weight" : [ 7, 10], 
-                "gamma" : [0, 1, 3], 
-                "learning_rate" : [0, 0.3, 0.7] 
-    }` 
-of which only min_child_weight turned out to be different from the default parameters and became 10. <br/>
-In the modelling process I predict sales for the next month as the target variable. <br/>
-I've added various feature that show how each shop, item and category have historically performed. <br/>
-Since we are dealing with a timeseries, the features that can calculated across the whole time series using sales of the next month (mean of future sales across all the shops or mean acrros the months, for example) we should avoid calculating them on test data set as it will be considered data leakage and give away information on the future sales that could be used by the model. To avoid the issue, I've calculated these values only on train data set and then assigned them to the test data so that we can use the features based on next-month sales but only in terms of the history. <br/>
-The most important features turned out to be category-grouped mean number of items sold next month, month-grouped mean number of items sold next month and shop-grouped mean number of items sold next month.
+The `data_exloration_v1` Jupyter Notebook contains the analysis and steps for creating the model used in the web application. The notebook has the following structure:
+1. Data exploration and outlier replacement
+2. Feature engineering and train,test and predict split
+3. Creating a base estimator to compare with
+4. Creating and testing linear model
+5. Creating and testing XGBoost model
+6. Tuning parameters and getting feature importance for the best model
+7. Testing on data not from the 30 shops used for training and test (unseen shops)
+
+The goal is to predict number of items sold next month (the future) given previous sales (the past). The step #2 contains 'predict' set - this is the transactions from the last (most recent) month of data for which we will be predicting future sales for the next month, and which we cannont compare with real data - this is the ultimate goal of the web app - to generate forecast for the next month. The test set is here to check how good is the model and whether we should trust its forecasts. <br/>
+Let's briefly go over the analysis in the notebook.
+1. In the data explorating we aggregate daily totals for each item and shop into montly totals. Then we explore the trend and seasonality in data:
+![plot7](images/screenshot7.png)
+After that we explore how number of items sold varies depending on the item, item category and shop.<br/>
+- For the item type:
+![plot4](images/screenshot4.png)
+- For the item category:
 ![plot5](images/screenshot5.png)
+As we see from the graph, the number of items sold varies from category to category. To account for this dependency, we will create a varaiable with average amount of items sold for each category id up to each month ('category_mean_past')
+- For the shop:
+![plot6](images/screenshot6.png)
+As we see from the graph, the number of items sold varies from shop to shop. To account for this dependency, we will create a varaiable with average amount of items sold for each item id and shop up to each month ('shop_item_mean_past') <br/>
+ <br/>
+Then I've handled outliers by replacing them with averages for each item-shop combination each month using z-statistics. <br/>
+I groupped the data by shop and item and then calculate std, mean and z-statistics for each item in each shop. Then if in particular month we sold number of items outside of 3-std-range from mean, let's call that row an outlier and replace that number of items sold with a mean for that item in that shop. <br/>
+As a result,around 0.4% of monthly totals are outliers. They could be due to human error during input or some anomalies. It is best to handle outliers to have a more stable model, so we include outlier replacement with the averages in the code of the web app. <br/>
+In the end, I sort the data by month and year.
+
+2. Using the finding from data exploration, we generate the mentioned features. Then, we split data into train, test, and predict using months as boundaries as we predict montly sales and do not want to mix records from different month. For the train set, we took 70% of the number of months (note that this could be different from 70% of the number of rows), for the predict set we take the last month, which is useless for training or testing in any case as it does not have information on sales next month, and the rest of the months goes to the test set. Given this split and the fact that we have 3-month-window rolling feature, the web app can take data with at least 6 month of records so that 4 months go to train, one to the predict and the one remaining month for the test set. <br/>
+In addition, as part of data processing, I've added rows with 0 number of items sold for each month-shop-item combination that did not have a record. Not having a record means that there were no sales this month, and so the system or person entering data simply omitted recording it, but for the training purposes, we need explicitly show that there were 0 sales that particular month. Moreover, doing that will ensure that for the last month we will have a complete set of all possible item-shop combinations to predict and not just whatever was sold that month.
+
+3. In order to understand whether we did a good job with our forecast and whether anyone should bother using it, we need to compare the model with some base estimator that does not use ML and which can be easily used in real life. For that purpose, I've created a small class 'base_estimator' that has 'predict' method and can be of two types: first forecasts number of items sold next month to be equal to sales last month, and the second forecasts average of items sold during last 3 month. It turned out that the second base estimator is better, so we will be using it for comparison. <br/>
+In terms of the measuring the performance, we will be using mean average error on the number of items (MAE), as it will be easy to interpet - this is by how many items our prediction differs from the reality. The base estimator gives MAE of 0.07 on test data.
+
+4. Then we use default HuberRegressor (because it is known to handle outliers pretty good and our data still has quite a large standard deviation). It gives MAE of 0.06. In order to use it I've created a Pipeline with scaling step before applying regression. This improves the performance and also makes possible to interpret coefficients as feature importance.
+
+5. Next, I was really betting on magical XGBoost to come and save the day by giving an incredible forecast. However, it had MAE of 0.07, which is almost 16% worse than the linear regression above. Besides, XGBoost turned out to be extremely slow compared to the linear models, and this is a disadvantage for using in a web app.
+
+6. Given that HuberRegressor turned out to be the best, I've used it along with GridSearchCV to tune its hyper parameters. Specifically, I tuned 'max_iter' and 'epsilon' parameters, both of which have changed from the default. Max_iter became 300 and epsilon became 1.3. Given that we have time series, we could not use a simple cross-validation splitting tecnique, as we should not randomly mix past and future data in train and test, but instead keep data ordered by date. To do so, there is a TimeSeriesSplit that ensures that there are no data leakages and data from past will not have access to data from the future to later use it. The tuned regressor still produced MAE of 0.06, alsmost with no improvement, but it is still better than the base estimator's MAE of 0.06. <br/>
+The most important features for predicting next month sales (with larges coefficient values) turned out to be number of items sold this month, average number of items sold last 3 month, trend for the number of items sold and how many items are sold per day on average.
+![plot8](images/screenshot8.png)
+
+7. Now let's test the model on shops that were not used in the initial train and test, specifically shopd 30 to 39, and part of data on shop 42 as we use it as an example template with data in the web app. <br/>
+On the 10 unseen shops MAE for the model was 5% better than MAE for the base estimator, or 0.07 vs 0.08 items.
+On the template shop MAE for the model was also 5% better than MAE for the base estimator, or 0.82 vs 0.86 items.
 
 # Conclusion
-Currently the mean absolute error (MAE) on number of items sold in a month is around 0.8 on test data that was derived from the 40 shops in the train data. <br/>
-When testing on 10 shops that were not used in training, MAE is 1.2. While testing on one unseen shop with only 6 month of data the MAE is 1.96. Given that the average of items sold per month is 2, this is not a small number. This demonstrates that for better predictions we need more data in terms of the shops and time period. This suggests that trying to predict sales with this app for a single shop that has only a couple month of data will not be a good idea<br/>
-Another thing is that to really see the accuracy of the prediction it would be better to have more broad data sets with sales of large amount of items. Currently this results imply that we should use the model on data with large amounts of sales (groceries, for example) with cautious as the error can be much bigger in terms of the number of items.
-I will be working on imporoving accuracy of prediction. <br/>
+Currently the mean absolute error (MAE) on number of items sold in a month is a bit better (around 5%) then that of a base estimator. This results are OK as they can result in real better money allocation (almost 22% of the total sales volume on test data) if the user applied the forecasts on test period and bought the right amount of items. Howerer, the model tuning has not resulted in any improvement, posiible because of cv=3 to save time. I would need to try more serious parameter tuning and also other models and combination of models to improve the forecast on usneen shops. <br/>
+
 **Possible improvements:** <br/>
+Model: <br/>
+1. Hyperparameter optimization with less data to speed up training initially <br/>
+2. Hyperparameter optimization with more CV splits<br/>
+3. Since only 4/9 features turned out to be sinificant, need to come up with additional features (std, max, min and etc)
+4. Adding external data to make better predictions: weather and holidays <br/>
+4. Trying other models (RF, AdaBoost, etc,) and using ensemble methods and to combine several models and take output of one model as input of another 
+5. Create list of items sold at each shop and add zeroes using it instead of adding all month-shop-item combinations <br/>
 Web app: <br/>
 1. Better interface
 2. File check for the right format
 3. Security for the uploaded data
-4. Possibly sending forecast files through email for privacy
-5. Support of multiple users work
-6. Output data from the last month next to prediction for comfort
+4. Possibly sending forecast files through email for privacy and to be able to handle big files
+5. Support of multiple users upload
+6. Output data from the last month next to prediction for comparative analysis
 <br/>
-Model: <br/>
-1. Hyperparameter optimization with less data to speed up training initially <br/>
-2. Hyperparameter optimization with CV split based on date instead of random as we are dealing with time series <br/>
-3. Training on more diverse data that will have more items sold or generating such data from this data <br/>
-4. Adding external data to make better predictions: weather and holidays <br/>
-5. Using ensemble methods to combine several models and take output of one model as input of another 
 
 # Author 
 Alibek Utyubayev. 
@@ -137,6 +170,8 @@ Linkedin: https://www.linkedin.com/in/alibek-utyubayev-74402721/
 Credits to Kaggle for the collected data and to Dimitreo Liveira for starting ideas on ML analysis https://www.kaggle.com/dimitreoliveira/model-stacking-feature-engineering-and-eda
 
 # Requirements
+The Jupyter Notebook uses standard Anaconda installation <br/>
+The web app has following requirements: <br/>
 click==7.1.2
 Flask==1.1.2
 gunicorn==20.0.4
