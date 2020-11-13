@@ -142,3 +142,6 @@ app/uploads/excel_template.xls
 data_exploration.ipynb
 .DS_Store
 data_exploration.ipynb
+models/forecast_linear_v5.pkl
+models/forecast_v2.pkl
+models/forecast.pkl
