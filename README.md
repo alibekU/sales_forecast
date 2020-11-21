@@ -8,8 +8,7 @@ A web app for forecasting sales given historical data
 - [Web Application](#web-application)
 - [Project structure](#project-structure)
 - [Data](#data)
-- [Analysis](#analysis) 
-- [Conclusion](#conclusion)
+- [Data analysis and modelling](#data-analysis-and-modelling) 
 - [Author](#author)
 - [Credits](#credits)
 - [Requirements](#requirements)
@@ -94,34 +93,56 @@ Here is a summary of that data:
 ![plot3](images/screenshot3.png)
 
 
-# Analysis
-The `data_exloration_v1` Jupyter Notebook contains the analysis and steps for creating the model used in the web application. The notebook has the following structure:
-1. Data exploration and outlier replacement
+# Data analysis and modelling
+The `data_exloration_v1` Jupyter Notebook contains the analysis and steps for creating the model used in the web application. Below you will find the sumary of it in the following structure:
+
+- Project Definition
+- Analysis
+- Methodology
+- Results
+- Conclusion
+
+
+1. Project Definition
+- The goal is to predict number of items sold next month (the future) given previous sales (the past). We are predicting how many items of each item type will be sold in each of shops that are provided in the historical data. To do that, we will aggregate the transactions into montly totals, create the variable 'itm_cnt_nxt_mnth' which will hold number of items sold next month, and solve the regression problem of predicting 'itm_cnt_nxt_mnth' using this month sales and statistics of past sales.
+- The strategy is too select shops that will be used for training, clean and aggreagate data by month, generate several features that describe the sales in the past (trend, rolling means, category and shop historic means, etc.), split data into train and test (usually called validate data, and it will be drawn from the initially selected shops), create and train several models, select the best model based on performance on the test data, and then perfrom the final test on shops that were not originally in train/test split data (let's callthem 'unseen' shops) to make sure we have a working model.
+- The expected results are that the error on test set and on 'unseen' shops are close to each other, and are lower than that of some basic estimator that a business owner might use in real life without all this fancy data science (like sales from last month or average of last 3 months, for example).
+- The metric to compute the error will be mean average error (MAE from now on). The choice of MAE is based on the fact that it is most easy to understand for someone without data science background, but with the real life business needs because if we are talkng about forecasting the number of items sold, it is best to minimize the number of items we got wrong, and talk about this number with the business owners. Saying that on average we are wrong by 1 item or 10 items in each prediction  much clearer conveys the error size to the people who deal with selling these items than some other metrics that are less expressable in terms of real-world terms.
+
+2. Analysis
+<br/>Let's briefly go over the data exploration part.
+- First, clean the data. There were no missing values or transactions with negative number of items sold or negative prices in this subset of data.
+- Then, aggregate daily totals for each item and shop into montly totals. Then we explore the trend and seasonality in data:
+![plot7](images/screenshot7.png)
+- After that, explore how number of items sold varies depending on the item, item category and shop.<br/>
+- - For the item type:
+![plot4](images/screenshot4.png)
+- - For the item category:
+![plot5](images/screenshot5.png)
+As we see from the graph, the number of items sold varies from category to category. To account for this dependency, we will create a varaiable with average amount of items sold for each category id up to each month ('category_mean_past')
+- - For the shop:
+![plot6](images/screenshot6.png)
+As we see from the graph, the number of items sold varies from shop to shop. To account for this dependency, we will create a varaiable with average amount of items sold for each item id and shop up to each month ('shop_item_mean_past') <br/>
+ <br/>
+- Then I've handled outliers by replacing them with averages for each item-shop combination each month using z-statistics. <br/>
+To identify the outliers, I groupped the data by shop and item and then calculated standard deviation, mean and z-statistics for each item in each shop. Then, if in particular month and in a certain shop we sold number of items outside of 3-std-range from mean, we call that row an outlier and replace the number of items sold with a mean for that item in that shop. <br/>
+As a result,around 0.4% of monthly totals were outliers. They could be due to human error during input or some anomalies. It is best to handle outliers to have a more stable model, so we include outlier replacement with the averages in the code of the web app. <br/>
+In the end, I sort the data by month and year.
+3. Methodology
+4. Results
+5. Conclusion
+
+
+
+
+
+The Methodology has the following structure:
 2. Feature engineering and train,test and predict split
 3. Creating a base estimator to compare with
 4. Creating and testing linear model
 5. Creating and testing XGBoost model
 6. Tuning parameters and getting feature importance for the best model
 7. Testing on data not from the 30 shops used for training and test (unseen shops)
-
-The goal is to predict number of items sold next month (the future) given previous sales (the past). The step #2 contains 'predict' set - this is the transactions from the last (most recent) month of data for which we will be predicting future sales for the next month, and which we cannont compare with real data - this is the ultimate goal of the web app - to generate forecast for the next month. The test set is here to check how good is the model and whether we should trust its forecasts. <br/>
-Let's briefly go over the analysis in the notebook.
-1. In the data explorating we aggregate daily totals for each item and shop into montly totals. Then we explore the trend and seasonality in data:
-![plot7](images/screenshot7.png)
-After that we explore how number of items sold varies depending on the item, item category and shop.<br/>
-- For the item type:
-![plot4](images/screenshot4.png)
-- For the item category:
-![plot5](images/screenshot5.png)
-As we see from the graph, the number of items sold varies from category to category. To account for this dependency, we will create a varaiable with average amount of items sold for each category id up to each month ('category_mean_past')
-- For the shop:
-![plot6](images/screenshot6.png)
-As we see from the graph, the number of items sold varies from shop to shop. To account for this dependency, we will create a varaiable with average amount of items sold for each item id and shop up to each month ('shop_item_mean_past') <br/>
- <br/>
-Then I've handled outliers by replacing them with averages for each item-shop combination each month using z-statistics. <br/>
-I groupped the data by shop and item and then calculate std, mean and z-statistics for each item in each shop. Then if in particular month we sold number of items outside of 3-std-range from mean, let's call that row an outlier and replace that number of items sold with a mean for that item in that shop. <br/>
-As a result,around 0.4% of monthly totals are outliers. They could be due to human error during input or some anomalies. It is best to handle outliers to have a more stable model, so we include outlier replacement with the averages in the code of the web app. <br/>
-In the end, I sort the data by month and year.
 
 2. Using the finding from data exploration, we generate the mentioned features. Then, we split data into train, test, and predict using months as boundaries as we predict montly sales and do not want to mix records from different month. For the train set, we took 70% of the number of months (note that this could be different from 70% of the number of rows), for the predict set we take the last month, which is useless for training or testing in any case as it does not have information on sales next month, and the rest of the months goes to the test set. Given this split and the fact that we have 3-month-window rolling feature, the web app can take data with at least 6 month of records so that 4 months go to train, one to the predict and the one remaining month for the test set. <br/>
 In addition, as part of data processing, I've added rows with 0 number of items sold for each month-shop-item combination that did not have a record. Not having a record means that there were no sales this month, and so the system or person entering data simply omitted recording it, but for the training purposes, we need explicitly show that there were 0 sales that particular month. Moreover, doing that will ensure that for the last month we will have a complete set of all possible item-shop combinations to predict and not just whatever was sold that month.
@@ -141,7 +162,7 @@ The most important features for predicting next month sales (with larges coeffic
 On the 10 unseen shops MAE for the model was 5% better than MAE for the base estimator, or 0.07 vs 0.08 items.
 On the template shop MAE for the model was also 5% better than MAE for the base estimator, or 0.82 vs 0.86 items.
 
-# Conclusion
+Conclusion
 Currently the mean absolute error (MAE) on number of items sold in a month is a bit better (around 5%) then that of a base estimator. This results are OK as they can result in real better money allocation (almost 22% of the total sales volume on test data) if the user applied the forecasts on test period and bought the right amount of items. Howerer, the model tuning has not resulted in any improvement, posiible because of cv=3 to save time. I would need to try more serious parameter tuning and also other models and combination of models to improve the forecast on usneen shops. <br/>
 
 **Possible improvements:** <br/>
