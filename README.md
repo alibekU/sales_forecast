@@ -106,6 +106,7 @@ The `data_exloration_v1` Jupyter Notebook contains the analysis and steps for cr
 <br/>
 
 Let's begin.  
+
 1. Project Definition:
 - The goal is to predict number of items sold next month (the future) given previous sales (the past). We are predicting how many items of each item type will be sold in each of shops that are provided in the historical data. To do that, we will aggregate the transactions into montly totals, create the variable 'itm_cnt_nxt_mnth' which will hold number of items sold next month, and solve the regression problem of predicting 'itm_cnt_nxt_mnth' using this month sales and statistics of past sales.
 - The strategy is too select shops that will be used for training, clean and aggreagate data by month, generate several features that describe the sales in the past (trend, rolling means, category and shop historic means, etc.), split data into train and test (usually called validate data, and it will be drawn from the initially selected shops), create and train several models, select the best model based on performance on the test data, and then perfrom the final test on shops that were not originally in train/test split data (let's callthem 'unseen' shops) to make sure we have a working model.
@@ -113,27 +114,37 @@ Let's begin.
 - The metric to compute the error will be mean average error (MAE from now on). The choice of MAE is based on the fact that it is most easy to understand for someone without data science background, but with the real life business needs because if we are talkng about forecasting the number of items sold, it is best to minimize the number of items we got wrong, and talk about this number with the business owners. Saying that on average we are wrong by 1 item or 10 items in each prediction  much clearer conveys the error size to the people who deal with selling these items than some other metrics that are less expressable in terms of real-world terms.
 <br/>
 <br/>
+
 2. Analysis
-<br/>Let's briefly go over the data exploration part.
+<br/>Let's briefly go over the data exploration part. <br/>
+
 - First, clean the data. There were no missing values or transactions with negative number of items sold or negative prices in this subset of data.
 - Then, aggregate daily totals for each item and shop into montly totals. Then we explore the trend and seasonality in data:
+
 ![plot7](images/screenshot7.png)
+
 - After that, explore how number of items sold varies depending on the item, item category and shop.<br/>
 - - For the item type:
+
 ![plot4](images/screenshot4.png)
+
 - - For the item category:
+
 ![plot5](images/screenshot5.png)
+
 As we see from the graph, the number of items sold varies from category to category. To account for this dependency, we will create a varaiable with average amount of items sold for each category id up to each month ('category_mean_past')
 - - For the shop:
 ![plot6](images/screenshot6.png)
 As we see from the graph, the number of items sold varies from shop to shop. To account for this dependency, we will create a varaiable with average amount of items sold for each item id and shop up to each month ('shop_item_mean_past') <br/>
  <br/>
+
 - Then I've handled outliers by replacing them with averages for each item-shop combination each month using z-statistics. <br/>
 To identify the outliers, I groupped the data by shop and item and then calculated standard deviation, mean and z-statistics for each item in each shop. Then, if in particular month and in a certain shop we sold number of items outside of 3-std-range from mean, we call that row an outlier and replace the number of items sold with a mean for that item in that shop. <br/>
 As a result,around 0.4% of monthly totals were outliers. They could be due to human error during input or some anomalies. It is best to handle outliers to have a more stable model, so we include outlier replacement with the averages in the code of the web app. <br/>
 In the end, I sort the data by date.
 <br/>
 <br/>
+
 3. Methodology <br/>
 The Methodology has the following structure:
 - Data cleaning recap
@@ -146,6 +157,7 @@ The Methodology has the following structure:
 - Coding complications
 <br/>
 <br/>
+
 - Data cleaning recap: <br/>
 As mentioned in the previous analysis section, the outliers only for the contionuous variable of the number of items sold this month is handled using z-statistics by replacing data that fall out of 3-std-range from the mean with the mean. There were no missing (null) values, but if they were, I would have dropped them from the dataset as there was enough of data available. 
 - Feature engineering and train, test and predict split: <br/>
@@ -179,10 +191,12 @@ On the template shop MAE for the model was also 5% better than MAE for the base 
 There were no major problems during the development except for the large amount of time it takes to process several milliong rows of data and train/test the modesl on them, especially with parameter tuning and for the XGBoost algorithm.
 <br/>
 <br/>
-4. Results
+
+4. Results <br/>
 It was interesting that XGBoost performed a bit worse than the Huber Regressor. This could be explained by several factors: first, the difference in the error is less than 0.01 in terms of MAE, which is not significant to begin with and could be due to a chance, second ,the number of features is not so large (9), and this could result in that a simple model is enough to capture everything from them, and it we had more features, then XGBoost or other more comlicated models would shine. The use of Huber regression in case of a web app is also justified by its performance in terms of the time it takes to create predcitions compared to the XGBoost.
 <br/>
 <br/>
+
 5. Conclusion <br/>
 Currently the mean absolute error (MAE) on number of items sold in a month is a bit better (around 5%) then that of a base estimator. This results are OK as they can result in real better money allocation (almost 22% of the total sales volume on test data) if the user applied the forecasts on test period and bought the right amount of items. Howerer, the model tuning has not resulted in any improvement, posiible because of cv=3 to save time. I would need to try more serious parameter tuning and also other models and combination of models to improve the forecast on usneen shops. <br/>
 **Possible improvements:** <br/>
